@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Bot, Loader2, Clipboard, Check } from 'lucide-react';
 import { runGenerateAtsFriendlyResume } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
+import { generateAtsFriendlyResume } from '@/ai/flows/ats-resume-generator';
 
 export function AtsFriendlyResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -28,13 +29,14 @@ export function AtsFriendlyResumeGenerator() {
     }
 
     startTransition(async () => {
-      const result = await runGenerateAtsFriendlyResume(resumeContent, jobDescription);
-      if (result.success) {
-        setGeneratedResume(result.data);
-      } else {
+      try {
+        const result = await generateAtsFriendlyResume({ resumeContent, jobDescription });
+        setGeneratedResume(result.atsFriendlyResume);
+      } catch (error) {
+         console.error('Generate ATS Friendly Resume Error:', error);
         toast({
           title: 'Error',
-          description: result.error,
+          description: 'Failed to generate the ATS-friendly resume.',
           variant: 'destructive',
         });
       }
