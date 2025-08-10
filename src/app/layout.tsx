@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'ResuAI - AI-Powered Resume Builder',
-  description: 'Create professional, job-specific resumes with AI-guided content suggestions, keyword optimization, and ATS-friendly templates.',
+  title: 'ResuAI - ATS-Friendly Resume Generator',
+  description: 'Paste your resume and a job description to get a rewritten, ATS-friendly resume in seconds.',
 };
 
 export default function RootLayout({

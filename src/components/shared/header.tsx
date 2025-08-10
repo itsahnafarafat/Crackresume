@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export function Header() {
   return (
@@ -25,11 +24,6 @@ export function Header() {
             </svg>
             <span className="font-bold text-xl">ResuAI</span>
           </Link>
-        </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <Button asChild>
-            <Link href="/editor">Create Resume</Link>
-          </Button>
         </div>
       </div>
     </header>
