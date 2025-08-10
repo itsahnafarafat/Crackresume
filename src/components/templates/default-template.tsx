@@ -6,6 +6,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Pencil, Mail, Phone, MapPin, Linkedin, Globe } from 'lucide-react';
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 interface TemplateProps {
   resumeData: ResumeData;
