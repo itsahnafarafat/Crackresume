@@ -24,9 +24,8 @@ const GenerateAtsFriendlyResumeOutputSchema = z.object({
   atsScore: z
     .number()
     .describe('A score from 0 to 100 representing how ATS-friendly the new resume is.'),
-  feedback: z
-    .string()
-    .describe('A brief explanation for the score, highlighting improvements made.'),
+  scoreAnalysis: z.string().describe('A one-sentence analysis of the score (e.g., "Good - Some optimization recommended").'),
+  keyImprovements: z.array(z.string()).describe('A list of key improvements made to the resume.'),
 });
 export type GenerateAtsFriendlyResumeOutput = z.infer<typeof GenerateAtsFriendlyResumeOutputSchema>;
 
@@ -51,9 +50,10 @@ Do not invent new information. Base the rewritten resume entirely on the content
 
 After rewriting the resume, you MUST provide:
 - **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices.
-- **feedback**: A brief, constructive paragraph explaining the score and the key improvements made.
+- **scoreAnalysis**: A very brief, one-sentence analysis of the score. Examples: "Excellent match!", "Good, but some optimization is recommended.", "Needs significant improvement for ATS compatibility."
+- **keyImprovements**: A bulleted list of the most important improvements you made.
 
-The output should be the complete, rewritten resume text, the score, and the feedback.
+The output should be the complete, rewritten resume text, the score, the analysis, and the list of improvements.
 
 Original Resume Content:
 {{{resumeContent}}}
