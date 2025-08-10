@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Bot, Loader2, Clipboard, Check, RefreshCw, Download, TrendingUp, AlertCircle, CheckCircle, PencilLine, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateAtsFriendlyResume, GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
+import { extractJobDetails } from '@/ai/flows/extract-job-details';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
 import jsPDF from 'jspdf';
+import type { Job } from '@/lib/types';
 
 
 export function AtsFriendlyResumeGenerator() {
@@ -46,13 +48,30 @@ export function AtsFriendlyResumeGenerator() {
 
     startTransition(async () => {
       try {
-        const result = await generateAtsFriendlyResume({ resumeContent, jobDescription, previousAttempt });
+        const [result, jobDetails] = await Promise.all([
+            generateAtsFriendlyResume({ resumeContent, jobDescription, previousAttempt }),
+            extractJobDetails({ jobDescription }),
+        ]);
+        
+        if (jobDetails.companyName && jobDetails.jobTitle) {
+            const newJob: Job = {
+                id: crypto.randomUUID(),
+                ...jobDetails,
+                status: 'Applied',
+                applicationDate: new Date().toISOString(),
+                notes: `Generated ATS resume. Score: ${result.atsScore}.`,
+            };
+            const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
+            localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
+            window.dispatchEvent(new Event('storage')); // Notify other components of the change
+        }
+
         setGenerationResult(result);
       } catch (error) {
          console.error('Generate ATS Friendly Resume Error:', error);
         toast({
           title: 'Error',
-          description: 'Failed to generate the ATS-friendly resume.',
+          description: 'Failed to process the request. Please try again.',
           variant: 'destructive',
         });
       }
@@ -93,7 +112,7 @@ export function AtsFriendlyResumeGenerator() {
 
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
+    <section className="w-full py-12 md:py-16 lg:py-20">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
@@ -136,7 +155,7 @@ export function AtsFriendlyResumeGenerator() {
               <div className="flex justify-center">
                  <Button onClick={() => handleGenerate()} disabled={isPending} size="lg">
                     {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Bot className="mr-2 h-5 w-5" />}
-                    Generate Resume
+                    Generate Resume & Track Job
                   </Button>
               </div>
             </CardContent>
@@ -146,7 +165,7 @@ export function AtsFriendlyResumeGenerator() {
              <Card className="mt-8">
                 <CardContent className="p-6 flex flex-col items-center justify-center gap-4 text-center">
                     <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                    <p className="text-muted-foreground">Our AI is crafting your new resume... This may take a moment.</p>
+                    <p className="text-muted-foreground">Our AI is crafting your new resume and tracking your job... This may take a moment.</p>
                 </CardContent>
              </Card>
            )}
