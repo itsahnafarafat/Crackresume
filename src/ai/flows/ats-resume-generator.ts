@@ -21,6 +21,12 @@ const GenerateAtsFriendlyResumeOutputSchema = z.object({
   atsFriendlyResume: z
     .string()
     .describe('The rewritten, ATS-friendly version of the resume.'),
+  atsScore: z
+    .number()
+    .describe('A score from 0 to 100 representing how ATS-friendly the new resume is.'),
+  feedback: z
+    .string()
+    .describe('A brief explanation for the score, highlighting improvements made.'),
 });
 export type GenerateAtsFriendlyResumeOutput = z.infer<typeof GenerateAtsFriendlyResumeOutputSchema>;
 
@@ -41,7 +47,13 @@ Focus on the following:
 3.  **Action Verbs & Quantifiable Achievements:** Start bullet points with strong action verbs and include quantifiable results wherever possible (e.g., "Increased X by Y%", "Managed a team of Z").
 4.  **Clarity and Conciseness:** Rewrite sentences to be clear, concise, and impactful.
 
-Do not invent new information. Base the rewritten resume entirely on the content of the original resume and the target job description. The output should be the complete, rewritten resume text.
+Do not invent new information. Base the rewritten resume entirely on the content of the original resume and the target job description.
+
+After rewriting the resume, you MUST provide:
+- **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices.
+- **feedback**: A brief, constructive paragraph explaining the score and the key improvements made.
+
+The output should be the complete, rewritten resume text, the score, and the feedback.
 
 Original Resume Content:
 {{{resumeContent}}}

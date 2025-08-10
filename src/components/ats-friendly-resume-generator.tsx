@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bot, Loader2, Clipboard, Check } from 'lucide-react';
-import { runGenerateAtsFriendlyResume } from '@/lib/actions';
+import { Bot, Loader2, Clipboard, Check, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generateAtsFriendlyResume } from '@/ai/flows/ats-resume-generator';
+import { generateAtsFriendlyResume, GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
+import { Progress } from '@/components/ui/progress';
 
 export function AtsFriendlyResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [generatedResume, setGeneratedResume] = useState('');
+  const [generationResult, setGenerationResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const [isPending, startTransition] = useTransition();
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
@@ -28,10 +28,12 @@ export function AtsFriendlyResumeGenerator() {
       return;
     }
 
+    setGenerationResult(null); // Clear previous results
+
     startTransition(async () => {
       try {
         const result = await generateAtsFriendlyResume({ resumeContent, jobDescription });
-        setGeneratedResume(result.atsFriendlyResume);
+        setGenerationResult(result);
       } catch (error) {
          console.error('Generate ATS Friendly Resume Error:', error);
         toast({
@@ -44,9 +46,11 @@ export function AtsFriendlyResumeGenerator() {
   };
   
   const handleCopy = () => {
-    navigator.clipboard.writeText(generatedResume);
-    setHasCopied(true);
-    setTimeout(() => setHasCopied(false), 2000);
+    if (generationResult) {
+      navigator.clipboard.writeText(generationResult.atsFriendlyResume);
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    }
   };
 
 
@@ -109,24 +113,48 @@ export function AtsFriendlyResumeGenerator() {
              </Card>
            )}
 
-          {generatedResume && !isPending && (
+          {generationResult && !isPending && (
             <Card className="mt-8">
               <CardHeader>
-                <CardTitle className="flex justify-between items-center">
+                <CardTitle className="flex justify-between items-start">
                   Your New ATS-Friendly Resume
-                  <Button variant="outline" size="sm" onClick={handleCopy}>
-                    {hasCopied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
-                    <span className="ml-2">{hasCopied ? 'Copied!' : 'Copy'}</span>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isPending}>
+                        <RefreshCw className="h-4 w-4" />
+                        <span className="ml-2">Regenerate</span>
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleCopy}>
+                      {hasCopied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+                      <span className="ml-2">{hasCopied ? 'Copied!' : 'Copy'}</span>
+                    </Button>
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Review the generated resume below. You can copy it and paste it into your document editor.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                    <Label className="text-base font-semibold">ATS Compatibility Score</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-24 w-24">
+                        <svg className="h-full w-full" width="36" height="36" viewBox="0 0 36 36">
+                          <circle className="text-secondary" strokeWidth="4" cx="18" cy="18" r="16" fill="none"></circle>
+                          <circle className="text-primary" strokeWidth="4" strokeDasharray={`${generationResult.atsScore}, 100`} cx="18" cy="18" r="16" fill="none" strokeLinecap="round" transform="rotate(-90 18 18)"></circle>
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-2xl font-bold">{generationResult.atsScore}</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground italic flex-1">
+                        {generationResult.feedback}
+                      </p>
+                    </div>
+                </div>
+
                 <Textarea
                   readOnly
-                  value={generatedResume}
+                  value={generationResult.atsFriendlyResume}
                   className="bg-secondary/50 h-96 text-sm"
                   rows={20}
                 />
