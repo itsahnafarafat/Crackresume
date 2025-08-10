@@ -31,9 +31,10 @@ export function JobTracker() {
     setIsMounted(true);
     loadJobs();
     
-    window.addEventListener('storage', loadJobs);
+    const handleStorageChange = () => loadJobs();
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-        window.removeEventListener('storage', loadJobs);
+        window.removeEventListener('storage', handleStorageChange);
     }
   }, [loadJobs]);
 
@@ -73,7 +74,7 @@ export function JobTracker() {
             </div>
              <AddEditJobDialog onSave={handleAddNewJob} triggerButton={
                 <Button>
-                    <PlusCircle className="mr-2" /> Add Job
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Job
                 </Button>
             } />
           </CardHeader>
