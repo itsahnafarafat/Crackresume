@@ -9,11 +9,13 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ScanLine, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ScanLine, Loader2, CheckCircle, AlertTriangle, Sparkles } from 'lucide-react';
 import { runAtsCheck } from '@/lib/actions';
 import type { ResumeData } from '@/lib/types';
 import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 interface AtsCheckModalProps {
   isOpen: boolean;
@@ -22,81 +24,115 @@ interface AtsCheckModalProps {
 }
 
 interface AtsResult {
-  issues: string[];
-  goodPoints: string[];
+  score: number;
+  feedback: string;
+  suggestions: string;
 }
 
 export function AtsCheckModal({ isOpen, onOpenChange, resumeData }: AtsCheckModalProps) {
   const [jobDescription, setJobDescription] = useState('');
   const [result, setResult] = useState<AtsResult | null>(null);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const handleCheck = () => {
-    startTransition(() => {
-      const checkResult = runAtsCheck(resumeData, jobDescription);
-      setResult(checkResult);
+     if (!jobDescription.trim()) {
+      toast({
+        title: 'Job Description Required',
+        description: 'Please paste a job description for an accurate ATS analysis.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      const response = await runAtsCheck(resumeData, jobDescription);
+      if (response.success) {
+        setResult(response.data);
+      } else {
+         toast({
+          title: 'Error',
+          description: response.error,
+          variant: 'destructive',
+        });
+        setResult(null);
+      }
     });
   };
-  
-  const score = result ? Math.max(0, 100 - result.issues.length * 20) : null;
-
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) setResult(null);
+      onOpenChange(open);
+    }}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ScanLine className="h-6 w-6 text-primary" />
-            ATS Compatibility Check
+            AI-Powered ATS Check
           </DialogTitle>
           <DialogDescription>
-            Get feedback on how well your resume might perform with Applicant Tracking Systems. For best results, provide a job description.
+            Paste a job description to get an AI-driven analysis of your resume's ATS-friendliness.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-           <div className="space-y-2">
-              <Label htmlFor="job-description-ats">Job Description (Optional)</Label>
-              <Textarea
-                id="job-description-ats"
-                placeholder="Paste a job description for a more accurate keyword analysis..."
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                rows={5}
-              />
-            </div>
+        <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+          <div className="space-y-2">
+            <Label htmlFor="job-description-ats">Job Description</Label>
+            <Textarea
+              id="job-description-ats"
+              placeholder="Paste the full job description here for the best analysis..."
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              rows={8}
+            />
+          </div>
           
-          {result && score !== null && (
-            <div>
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">ATS Compatibility Score</p>
-                <p className={`text-5xl font-bold ${score > 70 ? 'text-green-500' : score > 40 ? 'text-yellow-500' : 'text-red-500'}`}>{score}</p>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2"><CheckCircle className="h-5 w-5 text-green-500" />What you're doing well:</h4>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                    {result.goodPoints.map((point, i) => <li key={i}>{point}</li>)}
-                  </ul>
-                </div>
-                 <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-yellow-500" />Areas for improvement:</h4>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                     {result.issues.length > 0 ? result.issues.map((issue, i) => <li key={i}>{issue}</li>) : <li>No major issues found!</li>}
-                  </ul>
-                </div>
-              </div>
-
-            </div>
+          {isPending && (
+             <div className="flex flex-col items-center justify-center gap-4 p-8 rounded-lg bg-secondary/50">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                <p className="text-muted-foreground">Our AI is analyzing your resume... This may take a moment.</p>
+             </div>
           )}
 
+          {result && !isPending && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-center">ATS Compatibility Score</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center">
+                    <p className={`text-6xl font-bold ${result.score > 70 ? 'text-green-500' : result.score > 40 ? 'text-yellow-500' : 'text-red-500'}`}>{result.score}</p>
+                    <p className="text-sm text-muted-foreground mt-1">out of 100</p>
+                </CardContent>
+              </Card>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg"><CheckCircle className="h-5 w-5 text-green-500" />What You're Doing Well</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{result.feedback}</p>
+                  </CardContent>
+                </Card>
+                 <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg"><AlertTriangle className="h-5 w-5 text-yellow-500" />Areas for Improvement</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{result.suggestions}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
         </div>
 
-        <DialogFooter>
-          <Button onClick={handleCheck} disabled={isPending}>
-            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-            Run ATS Check
+        <DialogFooter className="pt-4 border-t">
+          <Button onClick={handleCheck} disabled={isPending || !jobDescription.trim()} className="w-full sm:w-auto">
+            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            Analyze Resume
           </Button>
         </DialogFooter>
       </DialogContent>
