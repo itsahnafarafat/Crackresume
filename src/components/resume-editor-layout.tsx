@@ -27,8 +27,8 @@ export function ResumeEditorLayout() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      const overId = over?.id.toString();
+    if (over && active.id !== over.id) {
+      const overId = over.id.toString();
       const activeId = active.id.toString();
       
       if (overId?.startsWith('exp') && activeId?.startsWith('exp')) {

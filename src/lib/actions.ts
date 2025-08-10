@@ -24,7 +24,7 @@ export async function runKeywordOptimizer(resume: string, jobDescription: string
   }
 }
 
-export function runAtsCheck(resumeData: ResumeData, jobDescription: string) {
+export async function runAtsCheck(resumeData: ResumeData, jobDescription: string) {
   const issues: string[] = [];
   const goodPoints: string[] = [];
 
