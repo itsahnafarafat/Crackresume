@@ -14,6 +14,16 @@ import {z} from 'genkit';
 const GenerateAtsFriendlyResumeInputSchema = z.object({
   resumeContent: z.string().describe('The original content of the resume.'),
   jobDescription: z.string().describe('The job description to tailor the resume to.'),
+  previousAttempt: z
+    .object({
+      resume: z.string(),
+      score: z.number(),
+      feedback: z.string(),
+    })
+    .optional()
+    .describe(
+      'A previously generated resume and its score, for iterative improvement.'
+    ),
 });
 export type GenerateAtsFriendlyResumeInput = z.infer<typeof GenerateAtsFriendlyResumeInputSchema>;
 
@@ -45,6 +55,17 @@ Focus on the following:
 2.  **Formatting:** Ensure the resume uses a clean, simple, and standard format that is easily parsable by ATS. Use standard section headers (e.g., "Professional Summary", "Work Experience", "Education", "Skills").
 3.  **Action Verbs & Quantifiable Achievements:** Start bullet points with strong action verbs and include quantifiable results wherever possible (e.g., "Increased X by Y%", "Managed a team of Z").
 4.  **Clarity and Conciseness:** Rewrite sentences to be clear, concise, and impactful.
+
+{{#if previousAttempt}}
+This is a regeneration request. The user was not satisfied with the previous version.
+Previous Resume:
+{{{previousAttempt.resume}}}
+
+Previous Score: {{previousAttempt.score}}
+Previous Feedback: {{previousAttempt.feedback}}
+
+You MUST make significant improvements to the resume to increase the score. Analyze the previous feedback and address the shortcomings. Focus on incorporating more keywords from the job description and strengthening the achievements listed.
+{{/if}}
 
 Do not invent new information. Base the rewritten resume entirely on the content of the original resume and the target job description.
 

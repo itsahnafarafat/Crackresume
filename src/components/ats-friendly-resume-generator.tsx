@@ -11,6 +11,8 @@ import { generateAtsFriendlyResume, GenerateAtsFriendlyResumeOutput } from '@/ai
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
+import jsPDF from 'jspdf';
+
 
 export function AtsFriendlyResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -20,7 +22,7 @@ export function AtsFriendlyResumeGenerator() {
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
 
-  const handleGenerate = () => {
+  const handleGenerate = (isRegeneration = false) => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
       toast({
         title: 'Missing Information',
@@ -29,12 +31,22 @@ export function AtsFriendlyResumeGenerator() {
       });
       return;
     }
+    
+    let previousAttempt;
+    if (isRegeneration && generationResult) {
+       previousAttempt = {
+         resume: generationResult.atsFriendlyResume,
+         score: generationResult.atsScore,
+         feedback: generationResult.scoreAnalysis,
+       };
+    } else {
+        setGenerationResult(null); // Clear previous results only on first generation
+    }
 
-    setGenerationResult(null); // Clear previous results
 
     startTransition(async () => {
       try {
-        const result = await generateAtsFriendlyResume({ resumeContent, jobDescription });
+        const result = await generateAtsFriendlyResume({ resumeContent, jobDescription, previousAttempt });
         setGenerationResult(result);
       } catch (error) {
          console.error('Generate ATS Friendly Resume Error:', error);
@@ -57,15 +69,12 @@ export function AtsFriendlyResumeGenerator() {
 
   const handleDownload = () => {
     if (generationResult) {
-      const blob = new Blob([generationResult.atsFriendlyResume], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ats-friendly-resume.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const doc = new jsPDF();
+      const margin = 15;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const text = doc.splitTextToSize(generationResult.atsFriendlyResume, pageWidth - margin * 2);
+      doc.text(text, margin, margin);
+      doc.save('ats-friendly-resume.pdf');
     }
   };
 
@@ -125,7 +134,7 @@ export function AtsFriendlyResumeGenerator() {
                 </div>
               </div>
               <div className="flex justify-center">
-                 <Button onClick={handleGenerate} disabled={isPending} size="lg">
+                 <Button onClick={() => handleGenerate()} disabled={isPending} size="lg">
                     {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Bot className="mr-2 h-5 w-5" />}
                     Generate Resume
                   </Button>
@@ -148,7 +157,7 @@ export function AtsFriendlyResumeGenerator() {
                 <CardTitle className="flex justify-between items-start">
                   Your New ATS-Friendly Resume
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isPending}>
+                    <Button variant="outline" size="sm" onClick={() => handleGenerate(true)} disabled={isPending}>
                         <RefreshCw className="h-4 w-4" />
                         <span className="ml-2 hidden sm:inline">Regenerate</span>
                     </Button>
