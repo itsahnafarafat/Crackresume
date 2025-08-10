@@ -6,4 +6,5 @@ export interface Job {
     applicationDate: string;
     status: 'Saved' | 'Applied' | 'Interviewing' | 'Offer' | 'Rejected';
     notes?: string;
+    jobDescription?: string;
 }

@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bot, Loader2, Clipboard, Check, RefreshCw, Download, TrendingUp, AlertCircle, CheckCircle, PencilLine, ListChecks } from 'lucide-react';
+import { Bot, Loader2, Clipboard, Check, RefreshCw, Download, TrendingUp, AlertCircle, CheckCircle, PencilLine, ListChecks, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateAtsFriendlyResume, GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
-import { extractJobDetails } from '@/ai/flows/extract-job-details';
+import { extractJobDetails, ExtractJobDetailsOutput } from '@/ai/flows/extract-job-details';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
@@ -19,10 +19,13 @@ import type { Job } from '@/lib/types';
 export function AtsFriendlyResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [generationResult, setGenerationResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
+
+  const [generationResult, setGenerationResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
+  const [jobDetailsForTracking, setJobDetailsForTracking] = useState<(ExtractJobDetailsOutput & { jobDescription: string }) | null>(null);
+  const [isJobTracked, setIsJobTracked] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
 
   const handleGenerate = (isRegeneration = false) => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
@@ -44,7 +47,8 @@ export function AtsFriendlyResumeGenerator() {
     } else {
         setGenerationResult(null); // Clear previous results only on first generation
     }
-
+    
+    setIsJobTracked(false); // Reset tracked state for new generation
 
     startTransition(async () => {
       try {
@@ -52,21 +56,14 @@ export function AtsFriendlyResumeGenerator() {
             generateAtsFriendlyResume({ resumeContent, jobDescription, previousAttempt }),
             extractJobDetails({ jobDescription }),
         ]);
-        
-        if (jobDetails.companyName && jobDetails.jobTitle) {
-            const newJob: Job = {
-                id: crypto.randomUUID(),
-                ...jobDetails,
-                status: 'Applied',
-                applicationDate: new Date().toISOString(),
-                notes: `Generated ATS resume. Score: ${result.atsScore}.`,
-            };
-            const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
-            localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
-            window.dispatchEvent(new Event('storage')); // Notify other components of the change
-        }
 
         setGenerationResult(result);
+        if (jobDetails.companyName && jobDetails.jobTitle) {
+            setJobDetailsForTracking({ ...jobDetails, jobDescription });
+        } else {
+            setJobDetailsForTracking(null);
+        }
+
       } catch (error) {
          console.error('Generate ATS Friendly Resume Error:', error);
         toast({
@@ -76,6 +73,26 @@ export function AtsFriendlyResumeGenerator() {
         });
       }
     });
+  };
+
+  const handleTrackJob = () => {
+    if (jobDetailsForTracking) {
+      const newJob: Job = {
+        id: crypto.randomUUID(),
+        ...jobDetailsForTracking,
+        status: 'Applied',
+        applicationDate: new Date().toISOString(),
+        notes: `Generated ATS resume. Score: ${generationResult?.atsScore}.`,
+      };
+      const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
+      localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
+      window.dispatchEvent(new Event('storage')); // Notify other components of the change
+      setIsJobTracked(true);
+       toast({
+        title: 'Job Tracked!',
+        description: `${jobDetailsForTracking.jobTitle} at ${jobDetailsForTracking.companyName} has been added to your tracker.`,
+      });
+    }
   };
   
   const handleCopy = () => {
@@ -97,7 +114,6 @@ export function AtsFriendlyResumeGenerator() {
     }
   };
 
-
   const getScoreColor = (score: number) => {
     if (score < 40) return 'bg-red-500';
     if (score < 75) return 'bg-yellow-500';
@@ -109,7 +125,6 @@ export function AtsFriendlyResumeGenerator() {
     if (score < 75) return <AlertCircle className="h-5 w-5 text-yellow-500" />;
     return <CheckCircle className="h-5 w-5 text-green-500" />;
   }
-
 
   return (
     <section className="w-full py-12 md:py-16 lg:py-20">
@@ -155,7 +170,7 @@ export function AtsFriendlyResumeGenerator() {
               <div className="flex justify-center">
                  <Button onClick={() => handleGenerate()} disabled={isPending} size="lg">
                     {isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Bot className="mr-2 h-5 w-5" />}
-                    Generate Resume & Track Job
+                    Generate Resume
                   </Button>
               </div>
             </CardContent>
@@ -165,7 +180,7 @@ export function AtsFriendlyResumeGenerator() {
              <Card className="mt-8">
                 <CardContent className="p-6 flex flex-col items-center justify-center gap-4 text-center">
                     <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                    <p className="text-muted-foreground">Our AI is crafting your new resume and tracking your job... This may take a moment.</p>
+                    <p className="text-muted-foreground">Our AI is crafting your new resume... This may take a moment.</p>
                 </CardContent>
              </Card>
            )}
@@ -199,7 +214,15 @@ export function AtsFriendlyResumeGenerator() {
                 <div className="p-4 border rounded-lg space-y-4">
                   <div className='flex items-center justify-between'>
                     <h3 className='text-lg font-semibold flex items-center gap-2'><TrendingUp className="h-5 w-5 text-primary" /> ATS Compatibility Score</h3>
-                    <span className='text-2xl font-bold text-primary'>{generationResult.atsScore}%</span>
+                    <div className="flex items-center gap-4">
+                        {jobDetailsForTracking && (
+                            <Button variant="secondary" size="sm" onClick={handleTrackJob} disabled={isJobTracked}>
+                                <PlusCircle className="h-4 w-4" />
+                                <span className="ml-2 hidden sm:inline">{isJobTracked ? 'Job Tracked' : 'Add to Tracker'}</span>
+                            </Button>
+                        )}
+                        <span className='text-2xl font-bold text-primary'>{generationResult.atsScore}%</span>
+                    </div>
                   </div>
                   <Progress value={generationResult.atsScore} className="h-2 [&>div]:bg-primary" indicatorClassName={getScoreColor(generationResult.atsScore)} />
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">

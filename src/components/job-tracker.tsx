@@ -82,7 +82,7 @@ export function JobTracker() {
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
                     <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
-                    <p className="mt-1 text-sm">When you generate a resume, the job will be automatically added here.</p>
+                    <p className="mt-1 text-sm">Add a job manually or use the "Add to Tracker" button after generating a resume.</p>
                 </div>
             ) : (
             <div className="overflow-x-auto">
@@ -152,7 +152,8 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
       location: '',
       status: 'Saved',
       applicationDate: new Date().toISOString(),
-      notes: ''
+      notes: '',
+      jobDescription: '',
   });
   const { toast } = useToast();
 
@@ -172,7 +173,7 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
             <DialogTitle>{job ? 'Edit Job' : 'Add New Job'}</DialogTitle>
             </DialogHeader>
@@ -202,9 +203,13 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="notes" className="text-right">Notes</Label>
-                    <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="col-span-3" />
+                 <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="jobDescriptionDisplay" className="text-right pt-2">Job Desc.</Label>
+                    <Textarea id="jobDescriptionDisplay" value={formData.jobDescription} onChange={e => setFormData({...formData, jobDescription: e.target.value})} className="col-span-3" rows={5} />
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="notes" className="text-right pt-2">Notes</Label>
+                    <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="col-span-3" rows={3}/>
                 </div>
              </div>
             <DialogFooter>
