@@ -8,14 +8,22 @@ import { Label } from "@/components/ui/label";
 import { Header } from "@/components/shared/header";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
+import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, you'd have authentication logic here.
-    // For now, we'll just redirect to the dashboard.
+    // For now, we'll simulate it with localStorage.
+    localStorage.setItem('user', JSON.stringify({
+      isLoggedIn: true,
+      email: email,
+      // In a real app, you'd fetch the name from your backend
+      name: email.split('@')[0] || 'User' 
+    }));
     router.push('/dashboard');
   };
 
@@ -34,7 +42,7 @@ export default function LoginPage() {
             <CardContent className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
