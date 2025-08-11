@@ -1,29 +1,9 @@
 
-'use client';
-
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
-import { LayoutDashboard, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Briefcase } from "lucide-react";
 
 export function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const user = localStorage.getItem('user');
-      setIsLoggedIn(!!user);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setIsLoggedIn(false);
-    router.push('/');
-  }
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
@@ -50,34 +30,22 @@ export function Header() {
           </Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">
-          {isLoggedIn ? (
-            <>
-               <Link
-                href="/dashboard"
-                className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Dashboard
-              </Link>
-               <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4"/>
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Log In
-              </Link>
-              <Link href="/signup">
-                <Button>Sign Up</Button>
-              </Link>
-            </>
-          )}
-
+          <Link
+            href="/job-tracker"
+            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Briefcase className="mr-2 h-4 w-4" />
+            Job Tracker
+          </Link>
+          <Link
+            href="/login"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Log In
+          </Link>
+          <Link href="/signup">
+            <Button>Sign Up</Button>
+          </Link>
         </nav>
       </div>
     </header>

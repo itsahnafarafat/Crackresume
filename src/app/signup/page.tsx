@@ -8,23 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Header } from "@/components/shared/header";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you'd have signup logic here.
-    // For now, we'll simulate it with localStorage.
-     localStorage.setItem('user', JSON.stringify({
-      isLoggedIn: true,
-      email: email,
-      name: `${firstName} ${lastName}`.trim() || 'User'
-    }));
     router.push('/dashboard');
   };
 
@@ -44,16 +33,16 @@ export default function SignupPage() {
                <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="first-name">First name</Label>
-                  <Input id="first-name" placeholder="Max" required value={firstName} onChange={e => setFirstName(e.target.value)} />
+                  <Input id="first-name" placeholder="Max" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="last-name">Last name</Label>
-                  <Input id="last-name" placeholder="Robinson" required value={lastName} onChange={e => setLastName(e.target.value)} />
+                  <Input id="last-name" placeholder="Robinson" required />
                 </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                <Input id="email" type="email" placeholder="m@example.com" required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
