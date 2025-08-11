@@ -1,5 +1,4 @@
 import { AtsFriendlyResumeGenerator } from "@/components/ats-friendly-resume-generator";
-import { JobTracker } from "@/components/job-tracker";
 import { Header } from "@/components/shared/header";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,14 @@ export default function Home() {
         <div className="py-12 md:py-16 lg:py-20 text-center bg-muted/20">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Track Your Applications</h2>
             <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl mt-4">
-                Keep all your job applications organized in one place.
+                Sign up to keep all your job applications organized in one place.
             </p>
-            <div className="mt-6">
-                <Link href="/job-tracker">
-                    <Button>View Job Tracker</Button>
+            <div className="mt-6 flex justify-center gap-4">
+                <Link href="/signup">
+                    <Button>Sign Up</Button>
+                </Link>
+                 <Link href="/login">
+                    <Button variant="outline">Log In</Button>
                 </Link>
             </div>
         </div>
