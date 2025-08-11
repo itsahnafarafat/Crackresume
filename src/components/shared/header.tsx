@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "../ui/button";
 
 export function Header() {
   return (
@@ -26,6 +27,23 @@ export function Header() {
             <span className="font-bold text-xl" style={{color: 'hsl(220, 25%, 25%)'}}>SkillSync</span>
           </Link>
         </div>
+        <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">
+            <Link
+                href="/job-tracker"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+                Job Tracker
+            </Link>
+            <Link
+                href="/login"
+                className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+                Log In
+            </Link>
+            <Link href="/signup">
+                <Button>Sign Up</Button>
+            </Link>
+        </nav>
       </div>
     </header>
   );
