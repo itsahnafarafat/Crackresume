@@ -7,22 +7,29 @@ export function Header() {
         <div className="mr-4 flex items-center">
           <Link href="/" className="flex items-center space-x-2">
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6 text-primary"
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8"
             >
-              <path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3" />
-              <polyline points="14 2 14 8 20 8" />
-              <path d="M10.4 12.6a2 2 0 1 1 3.2 0l-3 4.8a2 2 0 1 1-3.2-2.4l3-2.4Z" />
+              <defs>
+                <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: 'hsl(195, 90%, 45%)', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: 'hsl(145, 63%, 49%)', stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
+              <path
+                d="M23.9525 4.88889C25.9275 3.80556 28.25 5.37222 27.9 7.55556L26.1525 21.0389C25.855 22.95 23.88 24.1389 22.1025 23.4111L7.545 17.5222C5.5575 16.7111 4.755 14.2833 6.095 12.6389L18.0125 0.722222C19.345 -0.733333 21.73 -0.194444 22.7525 1.48889L23.9525 4.88889Z"
+                fill="url(#logo-gradient)"
+              />
+              <path
+                d="M13.419,19.2438l-4.14-4.14a1.2,1.2,0,0,1,1.7-1.7l3.29,3.29,5.78-5.78a1.2,1.2,0,0,1,1.7,1.7l-6.62,6.62A1.2,1.2,0,0,1,13.419,19.2438Z"
+                fill="white"
+              />
             </svg>
-            <span className="font-bold text-xl">SkillSync</span>
+            <span className="font-bold text-xl" style={{color: 'hsl(220, 25%, 25%)'}}>SkillSync</span>
           </Link>
         </div>
       </div>
