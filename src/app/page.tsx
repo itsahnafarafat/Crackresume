@@ -12,14 +12,11 @@ export default function Home() {
         <div className="py-12 md:py-16 lg:py-20 text-center bg-muted/20">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Track Your Applications</h2>
             <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl mt-4">
-                Sign up to keep all your job applications organized in one place.
+                Keep all your job applications organized in one place with our Job Tracker.
             </p>
             <div className="mt-6 flex justify-center gap-4">
-                <Link href="/signup">
-                    <Button>Sign Up</Button>
-                </Link>
-                 <Link href="/login">
-                    <Button variant="outline">Log In</Button>
+                <Link href="/job-tracker">
+                    <Button>Go to Job Tracker</Button>
                 </Link>
             </div>
         </div>
