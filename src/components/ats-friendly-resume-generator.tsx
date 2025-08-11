@@ -134,7 +134,7 @@ export function AtsFriendlyResumeGenerator() {
             <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
               Generate Your ATS-Friendly Resume
             </h1>
-            <p className="max-w-[600px] text-muted-foreground md:text-xl">
+            <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl">
               Paste your current resume and the job description below. Our AI will rewrite your resume to be optimized for Applicant Tracking Systems (ATS).
             </p>
           </div>
