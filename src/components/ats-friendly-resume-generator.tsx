@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Bot, Loader2, Clipboard, Check, RefreshCw, Download, TrendingUp, AlertCircle, CheckCircle, PencilLine, ListChecks, PlusCircle } from 'lucide-react';
+import { Bot, Loader2, Clipboard, Check, RefreshCw, Download, TrendingUp, AlertCircle, CheckCircle, PencilLine, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generateAtsFriendlyResume, GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
-import { extractJobDetails, ExtractJobDetailsOutput } from '@/ai/flows/extract-job-details';
+import { extractJobDetails } from '@/ai/flows/extract-job-details';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from './ui/scroll-area';
@@ -23,9 +23,27 @@ export function AtsFriendlyResumeGenerator() {
   const { toast } = useToast();
 
   const [generationResult, setGenerationResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
-  const [jobDetailsForTracking, setJobDetailsForTracking] = useState<(ExtractJobDetailsOutput & { jobDescription: string }) | null>(null);
-  const [isJobTracked, setIsJobTracked] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
+  
+  const handleTrackJob = (jobDetails: { jobTitle: string; companyName: string; location: string; jobDescription: string; }, score: number) => {
+    if (jobDetails) {
+      const newJob: Job = {
+        id: crypto.randomUUID(),
+        ...jobDetails,
+        status: 'Applied',
+        applicationDate: new Date().toISOString(),
+        notes: `Generated ATS resume. Score: ${score}.`,
+      };
+      const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
+      localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
+      window.dispatchEvent(new Event('storage')); // Notify other components of the change
+       toast({
+        title: 'Job Tracked!',
+        description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your tracker.`,
+      });
+    }
+  };
+
 
   const handleGenerate = (isRegeneration = false) => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
@@ -48,8 +66,6 @@ export function AtsFriendlyResumeGenerator() {
         setGenerationResult(null); // Clear previous results only on first generation
     }
     
-    setIsJobTracked(false); // Reset tracked state for new generation
-
     startTransition(async () => {
       try {
         const [result, jobDetails] = await Promise.all([
@@ -58,10 +74,10 @@ export function AtsFriendlyResumeGenerator() {
         ]);
 
         setGenerationResult(result);
+        
         if (jobDetails.companyName && jobDetails.jobTitle) {
-            setJobDetailsForTracking({ ...jobDetails, jobDescription });
-        } else {
-            setJobDetailsForTracking(null);
+            // Automatically track the job
+            handleTrackJob({ ...jobDetails, jobDescription }, result.atsScore);
         }
 
       } catch (error) {
@@ -73,26 +89,6 @@ export function AtsFriendlyResumeGenerator() {
         });
       }
     });
-  };
-
-  const handleTrackJob = () => {
-    if (jobDetailsForTracking) {
-      const newJob: Job = {
-        id: crypto.randomUUID(),
-        ...jobDetailsForTracking,
-        status: 'Applied',
-        applicationDate: new Date().toISOString(),
-        notes: `Generated ATS resume. Score: ${generationResult?.atsScore}.`,
-      };
-      const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
-      localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
-      window.dispatchEvent(new Event('storage')); // Notify other components of the change
-      setIsJobTracked(true);
-       toast({
-        title: 'Job Tracked!',
-        description: `${jobDetailsForTracking.jobTitle} at ${jobDetailsForTracking.companyName} has been added to your tracker.`,
-      });
-    }
   };
   
   const handleCopy = () => {
@@ -215,12 +211,6 @@ export function AtsFriendlyResumeGenerator() {
                   <div className='flex items-center justify-between'>
                     <h3 className='text-lg font-semibold flex items-center gap-2'><TrendingUp className="h-5 w-5 text-primary" /> ATS Compatibility Score</h3>
                     <div className="flex items-center gap-4">
-                        {jobDetailsForTracking && (
-                            <Button variant="secondary" size="sm" onClick={handleTrackJob} disabled={isJobTracked}>
-                                <PlusCircle className="h-4 w-4" />
-                                <span className="ml-2 hidden sm:inline">{isJobTracked ? 'Job Tracked' : 'Add to Tracker'}</span>
-                            </Button>
-                        )}
                         <span className='text-2xl font-bold text-primary'>{generationResult.atsScore}%</span>
                     </div>
                   </div>
