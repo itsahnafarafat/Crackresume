@@ -22,7 +22,7 @@ export function Header() {
               <polyline points="14 2 14 8 20 8" />
               <path d="M10.4 12.6a2 2 0 1 1 3.2 0l-3 4.8a2 2 0 1 1-3.2-2.4l3-2.4Z" />
             </svg>
-            <span className="font-bold text-xl">ResuAI</span>
+            <span className="font-bold text-xl">SkillSync</span>
           </Link>
         </div>
       </div>

@@ -11,7 +11,7 @@ export default function Home() {
         <JobTracker />
       </main>
       <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t">
-          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} ResuAI. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SkillSync. All rights reserved.</p>
       </footer>
     </div>
   );
