@@ -44,13 +44,6 @@ export function Header() {
             <ShieldCheck className="mr-2 h-4 w-4" />
             Privacy Policy
           </Link>
-          <Link
-            href="/job-tracker"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Briefcase className="mr-2 h-4 w-4" />
-            Job Tracker
-          </Link>
         </nav>
       </div>
     </header>
