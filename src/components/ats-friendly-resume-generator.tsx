@@ -100,14 +100,58 @@ export function AtsFriendlyResumeGenerator() {
   };
 
   const handleDownload = () => {
-    if (generationResult) {
-      const doc = new jsPDF();
-      const margin = 15;
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const text = doc.splitTextToSize(generationResult.atsFriendlyResume, pageWidth - margin * 2);
-      doc.text(text, margin, margin);
-      doc.save('ats-friendly-resume.pdf');
-    }
+    if (!generationResult) return;
+
+    const doc = new jsPDF('p', 'pt', 'a4');
+    const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const usableWidth = pageWidth - margin * 2;
+    let y = margin;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+
+    const lines = generationResult.atsFriendlyResume.split('\n');
+
+    // Estimate line height
+    const lineHeight = doc.getLineHeight() * 1.2;
+
+    lines.forEach(line => {
+      if (y > doc.internal.pageSize.getHeight() - margin) {
+        doc.addPage();
+        y = margin;
+      }
+
+      const trimmedLine = line.trim();
+      
+      // Simple logic to detect headers (could be improved)
+      const isHeader = 
+        (trimmedLine.toUpperCase() === trimmedLine && !trimmedLine.includes('@') && trimmedLine.length < 30 && trimmedLine.length > 5) || 
+        ["Professional Summary", "Work Experience", "Experience", "Education", "Skills", "Projects"].includes(trimmedLine);
+      
+      const isBulletPoint = trimmedLine.startsWith('*') || trimmedLine.startsWith('•') || trimmedLine.startsWith('-');
+
+      if (isHeader) {
+        y += lineHeight / 2; // Add some space before the header
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text(trimmedLine, margin, y);
+        y += lineHeight * 1.5;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+      } else if (isBulletPoint) {
+        const bulletContent = trimmedLine.substring(1).trim();
+        const textLines = doc.splitTextToSize(`• ${bulletContent}`, usableWidth - 15); // Indent bullet
+        doc.text(textLines, margin + 15, y);
+        y += textLines.length * lineHeight;
+      } else {
+        const textLines = doc.splitTextToSize(trimmedLine, usableWidth);
+        doc.text(textLines, margin, y);
+        y += textLines.length * lineHeight;
+      }
+    });
+
+    doc.save('ats-friendly-resume.pdf');
   };
 
   const getScoreColor = (score: number) => {
