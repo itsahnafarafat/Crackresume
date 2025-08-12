@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useTransition, useEffect } from 'react';
@@ -171,7 +172,7 @@ export function AtsFriendlyResumeGenerator() {
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl xl:text-6xl/none">
               Generate Your ATS-Friendly Resume
             </h1>
             <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl">
@@ -228,18 +229,18 @@ export function AtsFriendlyResumeGenerator() {
           {generationResult && !isPending && (
             <Card className="mt-8">
               <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  Your New ATS-Friendly Resume
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleGenerate(true)} disabled={isPending}>
+                <CardTitle className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <span>Your New ATS-Friendly Resume</span>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button variant="outline" size="sm" onClick={() => handleGenerate(true)} disabled={isPending} className="flex-1 sm:flex-none">
                         <RefreshCw className="h-4 w-4" />
                         <span className="ml-2 hidden sm:inline">Regenerate</span>
                     </Button>
-                     <Button variant="outline" size="sm" onClick={handleDownload}>
+                     <Button variant="outline" size="sm" onClick={handleDownload} className="flex-1 sm:flex-none">
                       <Download className="h-4 w-4" />
                       <span className="ml-2 hidden sm:inline">Download</span>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleCopy}>
+                    <Button variant="outline" size="sm" onClick={handleCopy} className="flex-1 sm:flex-none">
                       {hasCopied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
                       <span className="ml-2 hidden sm:inline">{hasCopied ? 'Copied!' : 'Copy'}</span>
                     </Button>

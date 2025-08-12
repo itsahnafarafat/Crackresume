@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -67,13 +68,13 @@ export function JobTracker() {
     <section className="w-full py-12 md:py-16 lg:py-20 bg-muted/40">
       <div className="container px-4 md:px-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
                 <CardTitle className="text-2xl font-bold tracking-tight">Job Application Tracker</CardTitle>
                 <CardDescription>Keep track of all your job applications in one place.</CardDescription>
             </div>
              <AddEditJobDialog onSave={handleAddNewJob} triggerButton={
-                <Button>
+                <Button className="w-full md:w-auto">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Job
                 </Button>
             } />
@@ -92,7 +93,7 @@ export function JobTracker() {
                   <TableRow>
                     <TableHead>Company</TableHead>
                     <TableHead>Position</TableHead>
-                    <TableHead>Date Applied</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date Applied</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -102,7 +103,7 @@ export function JobTracker() {
                     <TableRow key={job.id}>
                       <TableCell className="font-medium">{job.companyName}</TableCell>
                       <TableCell>{job.jobTitle}</TableCell>
-                      <TableCell>{format(new Date(job.applicationDate), 'PPP')}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{format(new Date(job.applicationDate), 'PPP')}</TableCell>
                       <TableCell>
                         <Select value={job.status} onValueChange={(status) => handleUpdateJob({...job, status: status as Job['status']})}>
                             <SelectTrigger className="w-36">
@@ -170,31 +171,45 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
       onSave(formData);
       setIsOpen(false);
   }
+  
+  // Update form data when job prop changes
+  useEffect(() => {
+    setFormData(job || {
+      companyName: '',
+      jobTitle: '',
+      location: '',
+      status: 'Saved',
+      applicationDate: new Date().toISOString(),
+      notes: '',
+      jobDescription: '',
+    });
+  }, [job]);
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
             <DialogHeader>
             <DialogTitle>{job ? 'Edit Job' : 'Add New Job'}</DialogTitle>
             </DialogHeader>
              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="companyName" className="text-right">Company</Label>
-                    <Input id="companyName" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="col-span-3" />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="companyName" className="text-left sm:text-right">Company</Label>
+                    <Input id="companyName" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="col-span-1 sm:col-span-3" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="jobTitle" className="text-right">Job Title</Label>
-                    <Input id="jobTitle" value={formData.jobTitle} onChange={e => setFormData({...formData, jobTitle: e.target.value})} className="col-span-3" />
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="jobTitle" className="text-left sm:text-right">Job Title</Label>
+                    <Input id="jobTitle" value={formData.jobTitle} onChange={e => setFormData({...formData, jobTitle: e.target.value})} className="col-span-1 sm:col-span-3" />
                 </div>
-                 <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="location" className="text-right">Location</Label>
-                    <Input id="location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="col-span-3" />
+                 <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="location" className="text-left sm:text-right">Location</Label>
+                    <Input id="location" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="col-span-1 sm:col-span-3" />
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="status" className="text-right">Status</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+                    <Label htmlFor="status" className="text-left sm:text-right">Status</Label>
                     <Select value={formData.status} onValueChange={(status) => setFormData({...formData, status: status as Job['status']})}>
-                        <SelectTrigger className="col-span-3">
+                        <SelectTrigger className="col-span-1 sm:col-span-3">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -204,13 +219,13 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
                         </SelectContent>
                     </Select>
                 </div>
-                 <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="jobDescriptionDisplay" className="text-right pt-2">Job Desc.</Label>
-                    <Textarea id="jobDescriptionDisplay" value={formData.jobDescription} onChange={e => setFormData({...formData, jobDescription: e.target.value})} className="col-span-3" rows={5} />
+                 <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label htmlFor="jobDescriptionDisplay" className="text-left sm:text-right pt-2">Job Desc.</Label>
+                    <Textarea id="jobDescriptionDisplay" value={formData.jobDescription} onChange={e => setFormData({...formData, jobDescription: e.target.value})} className="col-span-1 sm:col-span-3" rows={5} />
                 </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="notes" className="text-right pt-2">Notes</Label>
-                    <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="col-span-3" rows={3}/>
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+                    <Label htmlFor="notes" className="text-left sm:text-right pt-2">Notes</Label>
+                    <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="col-span-1 sm:col-span-3" rows={3}/>
                 </div>
              </div>
             <DialogFooter>
