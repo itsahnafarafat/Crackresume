@@ -22,9 +22,14 @@ export function JobTracker() {
   const [isMounted, setIsMounted] = useState(false);
 
   const loadJobs = useCallback(() => {
-    const storedJobs = localStorage.getItem('jobs');
-    if (storedJobs) {
-      setJobs(JSON.parse(storedJobs));
+    try {
+        const storedJobs = localStorage.getItem('jobs');
+        if (storedJobs) {
+            setJobs(JSON.parse(storedJobs));
+        }
+    } catch (error) {
+        console.error("Failed to parse jobs from localStorage", error);
+        setJobs([]);
     }
   }, []);
 
@@ -61,21 +66,35 @@ export function JobTracker() {
   }
 
   if (!isMounted) {
-    return null; // or a loading skeleton
+    return (
+        <div className="container px-4 md:px-6 py-12">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Loading Job Tracker...</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <div className="text-center py-12 text-muted-foreground">
+                        <Briefcase className="mx-auto h-12 w-12 animate-pulse" />
+                        <h3 className="mt-4 text-lg font-semibold">Loading your tracked jobs...</h3>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    );
   }
 
   return (
-    <section className="w-full py-12 md:py-16 lg:py-20 bg-muted/40">
+    <div className="w-full pb-12 md:pb-16 lg:pb-20">
       <div className="container px-4 md:px-6">
         <Card>
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-                <CardTitle className="text-2xl font-bold tracking-tight">Job Application Tracker</CardTitle>
+                <CardTitle className="text-2xl font-bold tracking-tight">My Tracked Jobs</CardTitle>
                 <CardDescription>Keep track of all your job applications in one place.</CardDescription>
             </div>
              <AddEditJobDialog onSave={handleAddNewJob} triggerButton={
                 <Button className="w-full md:w-auto">
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Job
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Job Manually
                 </Button>
             } />
           </CardHeader>
@@ -84,7 +103,7 @@ export function JobTracker() {
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
                     <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
-                    <p className="mt-1 text-sm">Add a job manually or use the "Add to Tracker" button after generating a resume.</p>
+                    <p className="mt-1 text-sm">Paste a job description above to automatically track a job, or add one manually.</p>
                 </div>
             ) : (
             <div className="overflow-x-auto">
@@ -93,7 +112,7 @@ export function JobTracker() {
                   <TableRow>
                     <TableHead>Company</TableHead>
                     <TableHead>Position</TableHead>
-                    <TableHead className="hidden sm:table-cell">Date Applied</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date Added</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -135,7 +154,7 @@ export function JobTracker() {
           </CardContent>
         </Card>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -172,18 +191,20 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
       setIsOpen(false);
   }
   
-  // Update form data when job prop changes
+  // Update form data when job prop changes, and reset for new job entry
   useEffect(() => {
-    setFormData(job || {
-      companyName: '',
-      jobTitle: '',
-      location: '',
-      status: 'Saved',
-      applicationDate: new Date().toISOString(),
-      notes: '',
-      jobDescription: '',
-    });
-  }, [job]);
+    if (isOpen) {
+        setFormData(job || {
+          companyName: '',
+          jobTitle: '',
+          location: '',
+          status: 'Saved',
+          applicationDate: new Date().toISOString(),
+          notes: '',
+          jobDescription: '',
+        });
+    }
+  }, [job, isOpen]);
 
 
   return (

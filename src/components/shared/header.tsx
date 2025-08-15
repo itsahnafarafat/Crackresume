@@ -1,7 +1,7 @@
 
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Briefcase, Info, ShieldCheck } from "lucide-react";
+import { Info, ShieldCheck } from "lucide-react";
 
 export function Header() {
   return (
@@ -13,13 +13,6 @@ export function Header() {
           </Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">
-          <Link
-              href="/job-tracker"
-              className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              Job Tracker
-          </Link>
            <Link
             href="/about"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
