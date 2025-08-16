@@ -10,18 +10,24 @@ import { Textarea } from './ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Edit, Save, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface UserProfileData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   about: string;
   profilePicture: string | null;
 }
 
 export function UserProfile() {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<UserProfileData>({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     about: '',
     profilePicture: null,
@@ -30,22 +36,29 @@ export function UserProfile() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load user data from localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      setProfile(prev => ({
-        ...prev,
-        name: userData.name || '',
-        email: userData.email || '',
-        about: userData.about || '',
-        profilePicture: userData.profilePicture || null
-      }));
+    const loadUserData = async () => {
+        if (!user) return;
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+            const userData = userDoc.data() as UserProfileData;
+            setProfile({
+                ...userData,
+                email: user.email || '',
+            });
+        } else {
+            setProfile(prev => ({ ...prev, email: user.email || '' }));
+        }
     }
-  }, []);
+    loadUserData();
+  }, [user]);
 
-  const handleSave = () => {
-    localStorage.setItem('user', JSON.stringify(profile));
+  const handleSave = async () => {
+    if (!user) return;
+    const { email, ...profileData } = profile;
+    const userDocRef = doc(db, 'users', user.uid);
+    await setDoc(userDocRef, profileData, { merge: true });
+
     setIsEditing(false);
     toast({
       title: "Profile Saved",
@@ -86,7 +99,7 @@ export function UserProfile() {
                 <CardContent className="space-y-6">
                     <div className="flex items-center gap-6">
                          <Avatar className="h-24 w-24">
-                            <AvatarImage src={profile.profilePicture || undefined} alt={profile.name} />
+                            <AvatarImage src={profile.profilePicture || undefined} alt={profile.firstName} />
                             <AvatarFallback>
                                 <User className="h-10 w-10 text-muted-foreground" />
                             </AvatarFallback>
@@ -94,13 +107,25 @@ export function UserProfile() {
                         <div className="space-y-1">
                             {isEditing ? (
                                 <>
-                                <Label htmlFor='name'>Name</Label>
-                                <Input 
-                                    id='name'
-                                    className="text-2xl font-bold" 
-                                    value={profile.name} 
-                                    onChange={(e) => setProfile(p => ({...p, name: e.target.value}))} 
-                                />
+                                <div className="flex gap-2">
+                                    <div>
+                                        <Label htmlFor='firstName'>First Name</Label>
+                                        <Input 
+                                            id='firstName'
+                                            value={profile.firstName} 
+                                            onChange={(e) => setProfile(p => ({...p, firstName: e.target.value}))} 
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor='lastName'>Last Name</Label>
+                                        <Input 
+                                            id='lastName'
+                                            value={profile.lastName} 
+                                            onChange={(e) => setProfile(p => ({...p, lastName: e.target.value}))} 
+                                        />
+                                    </div>
+                                </div>
+
                                 <Button variant="link" className="p-0 h-auto" onClick={() => fileInputRef.current?.click()}>
                                     Upload Picture
                                 </Button>
@@ -114,7 +139,7 @@ export function UserProfile() {
                                 </>
                             ) : (
                                 <>
-                                <h2 className="text-2xl font-bold">{profile.name}</h2>
+                                <h2 className="text-2xl font-bold">{`${profile.firstName} ${profile.lastName}`}</h2>
                                 <p className="text-muted-foreground">{profile.email}</p>
                                 </>
                             )}

@@ -9,13 +9,26 @@ import { Loader2, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractJobDetails } from '@/ai/flows/extract-job-details';
 import type { Job } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export function JobDescriptionProcessor() {
   const [jobDescription, setJobDescription] = useState('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { user, isLoggedIn } = useAuth();
 
   const handleTrackJob = () => {
+    if (!isLoggedIn || !user) {
+       toast({
+        title: 'Authentication Required',
+        description: 'You need to be logged in to track a job.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!jobDescription.trim()) {
       toast({
         title: 'Missing Information',
@@ -30,17 +43,20 @@ export function JobDescriptionProcessor() {
         const jobDetails = await extractJobDetails({ jobDescription });
 
         if (jobDetails.companyName && jobDetails.jobTitle) {
-          const newJob: Job = {
-            id: crypto.randomUUID(),
+          const newJob: Omit<Job, 'id'> = {
+            userId: user.uid,
             ...jobDetails,
             status: 'Saved',
             applicationDate: new Date().toISOString(),
             notes: '',
             jobDescription: jobDescription,
           };
-
-          const currentJobs: Job[] = JSON.parse(localStorage.getItem('jobs') || '[]');
-          localStorage.setItem('jobs', JSON.stringify([newJob, ...currentJobs]));
+          
+          await addDoc(collection(db, "jobs"), {
+              ...newJob,
+              applicationDate: new Date(newJob.applicationDate)
+          });
+          
           window.dispatchEvent(new Event('storage')); // Notify job tracker component of the change
           
           toast({
@@ -78,7 +94,7 @@ export function JobDescriptionProcessor() {
           className="text-sm"
         />
         <div className="flex justify-center">
-          <Button onClick={handleTrackJob} disabled={isPending} size="lg">
+          <Button onClick={handleTrackJob} disabled={isPending || !isLoggedIn} size="lg">
             {isPending ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : (
