@@ -1,19 +1,23 @@
-
 rules_version = '2';
+
+// The query in src/components/job-tracker.tsx requires a composite index.
+// You can create it here: https://console.firebase.google.com/v1/r/project/resuai-qodve/firestore/indexes?create_composite=Cklwcm9qZWN0cy9yZXN1YWktcW9kdmUvZGF0YWJhc2VzLyhkZWZhdWx0KS9jb2xsZWN0aW9uR3JvdXBzL2pvYnMvaW5kZXhlcy9fEAEaCgoGdXNlcklkEAEaEwoPYXBwbGljYXRpb25EYXRlEAIaDAoIX19uYW1lX18QAg
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read and write their own profile data.
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId;
     }
-
-    // Users can manage their own job documents.
     match /jobs/{jobId} {
-      // Allow read/write operations if the user is the owner of the job document.
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      // Allow creating new jobs if the user is authenticated and is the owner.
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Allow users to create jobs for themselves
+      allow create: if request.auth.uid == request.resource.data.userId;
+      
+      // Allow users to read, update, or delete their own jobs
+      allow get, update, delete: if request.auth.uid == resource.data.userId;
+
+      // Allow users to list their own jobs, sorted by date
+      allow list: if request.auth.uid == request.query.get('where.userId') &&
+                   request.query.get('orderBy[0].field.fieldPath') == 'applicationDate';
     }
   }
 }
