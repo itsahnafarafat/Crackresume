@@ -13,16 +13,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Job } from '@/lib/types';
-import { Briefcase, Edit, PlusCircle, Trash2, Loader2 } from 'lucide-react';
+import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
+import Link from 'next/link';
 
 const APPLICATION_STATUSES: Job['status'][] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 
 const formatDate = (date: string | { toDate: () => Date }): string => {
+    if (!date) return 'N/A';
     if (typeof date === 'string') {
-        return format(new Date(date), 'PPP');
+        const d = new Date(date);
+        return isNaN(d.getTime()) ? 'Invalid Date' : format(d, 'PPP');
     }
     if (date && typeof date.toDate === 'function') {
         return format(date.toDate(), 'PPP');
@@ -77,6 +80,7 @@ export function JobTracker() {
 
 
   const handleUpdateJob = async (updatedJob: Job) => {
+    if (!user) return;
     try {
       const jobRef = doc(firestore, 'jobs', updatedJob.id);
       await updateDoc(jobRef, { ...updatedJob });
@@ -89,6 +93,7 @@ export function JobTracker() {
   };
 
   const handleDeleteJob = async (jobId: string) => {
+     if (!user) return;
     try {
       await deleteDoc(doc(firestore, 'jobs', jobId));
       loadJobs();
@@ -111,24 +116,6 @@ export function JobTracker() {
         toast({ title: 'Error', description: 'Failed to add new job.', variant: 'destructive' });
     }
   }
-  
-  if (loading) {
-    return (
-        <div className="container px-4 md:px-6 py-12">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Loading Job Tracker...</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <div className="text-center py-12 text-muted-foreground">
-                        <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-                        <h3 className="mt-4 text-lg font-semibold">Loading your tracked jobs...</h3>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-  }
 
   return (
     <div className="w-full pb-12 md:pb-16 lg:pb-20">
@@ -139,20 +126,42 @@ export function JobTracker() {
                 <CardTitle className="text-2xl font-bold tracking-tight">My Tracked Jobs</CardTitle>
                 <CardDescription>Keep track of all your job applications in one place.</CardDescription>
             </div>
-             <AddEditJobDialog onSave={handleAddNewJob} triggerButton={
+             {user && <AddEditJobDialog onSave={handleAddNewJob} triggerButton={
                 <Button className="w-full md:w-auto">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Job Manually
                 </Button>
-            } />
+            } />}
           </CardHeader>
           <CardContent>
-             {jobs.length === 0 ? (
+            {loading && (
+                 <div className="text-center py-12 text-muted-foreground">
+                    <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+                    <h3 className="mt-4 text-lg font-semibold">Loading your tracked jobs...</h3>
+                </div>
+            )}
+            {!loading && !user && (
+                 <div className="text-center py-12 text-muted-foreground">
+                    <Briefcase className="mx-auto h-12 w-12" />
+                    <h3 className="mt-4 text-lg font-semibold">Track Your Applications</h3>
+                    <p className="mt-1 text-sm">Log in or create an account to save and manage your job applications.</p>
+                     <div className="flex gap-4 justify-center pt-4">
+                        <Button asChild>
+                            <Link href="/login"><LogIn /> Login</Link>
+                        </Button>
+                        <Button asChild variant="outline">
+                            <Link href="/signup"><UserPlus /> Sign Up</Link>
+                        </Button>
+                    </div>
+                </div>
+            )}
+            {!loading && user && jobs.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
                     <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
                     <p className="mt-1 text-sm">Paste a job description above to automatically track a job, or add one manually.</p>
                 </div>
-            ) : (
+            )}
+            {!loading && user && jobs.length > 0 && (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

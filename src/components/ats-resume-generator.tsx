@@ -16,6 +16,7 @@ import React, { useState, useTransition } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
+import Link from 'next/link';
 
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -34,48 +35,55 @@ export function AtsResumeGenerator() {
       });
       return;
     }
-     if (!user) {
-      toast({
-        title: 'Not Authenticated',
-        description: 'You must be logged in to use this feature.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     startTransition(async () => {
       setResult(null);
       try {
-        const [atsResult, jobDetails] = await Promise.all([
-           generateAtsFriendlyResume({ resumeContent, jobDescription }),
-           extractJobDetails({ jobDescription })
-        ]);
-
-        setResult(atsResult);
-
-        if (jobDetails.companyName && jobDetails.jobTitle) {
-          const newJob: Omit<Job, 'id'> = {
-            userId: user.uid,
-            ...jobDetails,
-            status: 'Saved',
-            applicationDate: new Date().toISOString(),
-            notes: 'Generated an ATS-friendly resume for this application.',
-            jobDescription: jobDescription,
-          };
-          
-          await addDoc(collection(firestore, 'jobs'), newJob);
-          
-          window.dispatchEvent(new Event('jobAdded'));
-          
-          toast({
-            title: 'Job Tracked!',
-            description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
-          });
+        if (user) {
+            const [atsResult, jobDetails] = await Promise.all([
+               generateAtsFriendlyResume({ resumeContent, jobDescription }),
+               extractJobDetails({ jobDescription })
+            ]);
+    
+            setResult(atsResult);
+    
+            if (jobDetails.companyName && jobDetails.jobTitle) {
+              const newJob: Omit<Job, 'id'> = {
+                userId: user.uid,
+                ...jobDetails,
+                status: 'Saved',
+                applicationDate: new Date().toISOString(),
+                notes: 'Generated an ATS-friendly resume for this application.',
+                jobDescription: jobDescription,
+              };
+              
+              await addDoc(collection(firestore, 'jobs'), newJob);
+              
+              window.dispatchEvent(new Event('jobAdded'));
+              
+              toast({
+                title: 'Job Tracked!',
+                description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
+              });
+            } else {
+                 toast({
+                    title: 'Could Not Track Job',
+                    description: 'The AI could not extract job details to track, but the resume was generated.',
+                    variant: 'destructive',
+                });
+            }
         } else {
-             toast({
-                title: 'Could Not Track Job',
-                description: 'The AI could not extract job details to track, but the resume was generated.',
-                variant: 'destructive',
+            // Unauthenticated user flow
+            const atsResult = await generateAtsFriendlyResume({ resumeContent, jobDescription });
+            setResult(atsResult);
+            toast({
+                title: 'Resume Generated!',
+                description: (
+                    <p>
+                        Your resume is ready. Want to save and track this job?{' '}
+                        <Link href="/signup" className="underline font-bold">Sign up for free</Link>.
+                    </p>
+                )
             });
         }
 
@@ -145,7 +153,7 @@ export function AtsResumeGenerator() {
          <div className="flex justify-center">
             <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg">
                 {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                Generate & Track
+                {user ? 'Generate & Track' : 'Generate Resume'}
             </Button>
          </div>
         )}
@@ -215,7 +223,7 @@ export function AtsResumeGenerator() {
                     </div>
                      <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
                         {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                        Regenerate
+                         {user ? 'Regenerate & Track' : 'Regenerate Resume'}
                     </Button>
                 </div>
             )}
