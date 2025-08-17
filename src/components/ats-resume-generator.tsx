@@ -3,6 +3,8 @@
 
 import { generateAtsFriendlyResume } from '@/ai/flows/ats-resume-generator';
 import type { GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
+import { extractJobDetails } from '@/ai/flows/extract-job-details';
+import type { Job } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -32,16 +34,49 @@ export function AtsResumeGenerator() {
     startTransition(async () => {
       setResult(null);
       try {
-        const output = await generateAtsFriendlyResume({
-          resumeContent,
-          jobDescription,
-        });
-        setResult(output);
+        // Run both AI flows in parallel for efficiency
+        const [atsResult, jobDetails] = await Promise.all([
+           generateAtsFriendlyResume({ resumeContent, jobDescription }),
+           extractJobDetails({ jobDescription })
+        ]);
+
+        setResult(atsResult);
+
+        // Track the job in local storage
+        if (jobDetails.companyName && jobDetails.jobTitle) {
+          const storedJobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+          const newJob: Job = {
+            id: new Date().toISOString(),
+            ...jobDetails,
+            status: 'Saved',
+            applicationDate: new Date().toISOString(),
+            notes: 'Generated an ATS-friendly resume for this application.',
+            jobDescription: jobDescription,
+          };
+          
+          storedJobs.unshift(newJob);
+          localStorage.setItem('jobs', JSON.stringify(storedJobs));
+          
+          // Dispatch a storage event to notify JobTracker to update
+          window.dispatchEvent(new Event('storage'));
+          
+          toast({
+            title: 'Job Tracked!',
+            description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
+          });
+        } else {
+             toast({
+                title: 'Could Not Track Job',
+                description: 'The AI could not extract job details to track, but the resume was generated.',
+                variant: 'destructive',
+            });
+        }
+
       } catch (error) {
         console.error('Generation Error:', error);
         toast({
           title: 'Error',
-          description: 'Failed to generate the resume. Please try again.',
+          description: 'Failed to generate the resume or track the job. Please try again.',
           variant: 'destructive',
         });
       }
@@ -111,7 +146,7 @@ export function AtsResumeGenerator() {
                 {isPending && (
                     <div className="flex flex-col items-center justify-center h-96 space-y-4">
                         <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Analyzing and rewriting your resume...</p>
+                        <p className="text-muted-foreground">Analyzing, rewriting, and tracking...</p>
                         <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
                     </div>
                 )}
@@ -119,11 +154,11 @@ export function AtsResumeGenerator() {
                      <div className="flex flex-col items-center justify-center h-96 text-center">
                         <FileText className="w-12 h-12 text-muted-foreground/50" />
                         <p className="mt-4 text-muted-foreground">
-                            Your optimized resume will appear here once generated.
+                            Your optimized resume will appear here.
                         </p>
                          <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg" className="mt-6">
                             {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                            Generate Resume
+                            Generate & Track
                         </Button>
                     </div>
                 )}
@@ -167,6 +202,10 @@ export function AtsResumeGenerator() {
                                 className="h-[400px] bg-muted/50 text-sm"
                             />
                         </div>
+                         <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
+                            {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
+                            Regenerate
+                        </Button>
                     </div>
                 )}
                 </CardContent>
