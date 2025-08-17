@@ -1,18 +1,14 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId;
     }
     match /jobs/{jobId} {
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow get, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow list: if request.auth != null 
-                    && request.query.limit <= 100
-                    && request.query.offset == 0
-                    && request.query.get('userId') == request.auth.uid
-                    && (request.query.get('orderBy') == null || request.query.get('orderBy') == 'applicationDate desc');
+      allow create, get, update, delete: if request.auth.uid == request.resource.data.userId;
+      // Allow a user to list only their own jobs.
+      // The query in the app MUST include `where('userId', '==', request.auth.uid)`.
+      allow list: if request.auth != null;
     }
   }
 }
