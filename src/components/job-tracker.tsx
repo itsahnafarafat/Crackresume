@@ -15,10 +15,21 @@ import { format } from 'date-fns';
 import type { Job } from '@/lib/types';
 import { Briefcase, Edit, PlusCircle, Trash2, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 
 const APPLICATION_STATUSES: Job['status'][] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
+
+const formatDate = (date: string | { toDate: () => Date }): string => {
+    if (typeof date === 'string') {
+        return format(new Date(date), 'PPP');
+    }
+    if (date && typeof date.toDate === 'function') {
+        return format(date.toDate(), 'PPP');
+    }
+    return 'Invalid Date';
+};
+
 
 export function JobTracker() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -158,7 +169,7 @@ export function JobTracker() {
                     <TableRow key={job.id}>
                       <TableCell className="font-medium">{job.companyName}</TableCell>
                       <TableCell>{job.jobTitle}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{format(new Date(job.applicationDate), 'PPP')}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDate(job.applicationDate)}</TableCell>
                       <TableCell>
                         <Select value={job.status} onValueChange={(status) => handleUpdateJob({...job, status: status as Job['status']})}>
                             <SelectTrigger className="w-36">

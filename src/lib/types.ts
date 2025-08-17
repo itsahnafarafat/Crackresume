@@ -6,7 +6,7 @@ export interface Job {
     companyName: string;
     jobTitle: string;
     location: string;
-    applicationDate: string;
+    applicationDate: string | { toDate: () => Date };
     status: 'Saved' | 'Applied' | 'Interviewing' | 'Offer' | 'Rejected';
     notes?: string;
     jobDescription?: string;
