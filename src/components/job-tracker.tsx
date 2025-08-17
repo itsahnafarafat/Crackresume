@@ -13,58 +13,95 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Job } from '@/lib/types';
-import { Briefcase, Edit, PlusCircle, Trash2 } from 'lucide-react';
+import { Briefcase, Edit, PlusCircle, Trash2, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy } from 'firebase/firestore';
+import { firestore } from '@/lib/firebase';
 
 const APPLICATION_STATUSES: Job['status'][] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
 
 export function JobTracker() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const loadJobs = useCallback(() => {
-    const storedJobs = localStorage.getItem('jobs');
-    setJobs(storedJobs ? JSON.parse(storedJobs) : []);
-  }, []);
+  const loadJobs = useCallback(async () => {
+    if (!user) {
+      setJobs([]);
+      setLoading(false);
+      return;
+    };
+    
+    setLoading(true);
+    try {
+      const q = query(
+        collection(firestore, 'jobs'), 
+        where('userId', '==', user.uid),
+        orderBy('applicationDate', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      const jobsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Job));
+      setJobs(jobsData);
+    } catch (error) {
+      console.error("Error loading jobs: ", error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load your tracked jobs. Please check your connection or Firestore rules.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
 
   useEffect(() => {
-    setIsMounted(true);
     loadJobs();
-
-    const handleStorageChange = () => {
-        loadJobs();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
+    
+    const handleJobAdded = () => loadJobs();
+    window.addEventListener('jobAdded', handleJobAdded);
+    return () => window.removeEventListener('jobAdded', handleJobAdded);
 
   }, [loadJobs]);
 
 
-  const handleUpdateJob = (updatedJob: Job) => {
-    const updatedJobs = jobs.map(job => job.id === updatedJob.id ? updatedJob : job);
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
-    loadJobs();
+  const handleUpdateJob = async (updatedJob: Job) => {
+    try {
+      const jobRef = doc(firestore, 'jobs', updatedJob.id);
+      await updateDoc(jobRef, { ...updatedJob });
+      loadJobs();
+      toast({ title: 'Success', description: 'Job updated successfully.' });
+    } catch (error) {
+       console.error("Error updating job: ", error);
+       toast({ title: 'Error', description: 'Failed to update job.', variant: 'destructive'});
+    }
   };
 
-  const handleDeleteJob = (jobId: string) => {
-    const updatedJobs = jobs.filter(job => job.id !== jobId);
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
-    loadJobs();
+  const handleDeleteJob = async (jobId: string) => {
+    try {
+      await deleteDoc(doc(firestore, 'jobs', jobId));
+      loadJobs();
+      toast({ title: 'Success', description: 'Job deleted.' });
+    } catch(error) {
+      console.error("Error deleting job: ", error);
+      toast({ title: 'Error', description: 'Failed to delete job.', variant: 'destructive'});
+    }
   };
 
-  const handleAddNewJob = (newJobData: Omit<Job, 'id'>) => {
-    const newJob: Job = {
-        id: new Date().toISOString(),
-        ...newJobData,
-    };
-    const updatedJobs = [newJob, ...jobs];
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
-    loadJobs();
+  const handleAddNewJob = async (newJobData: Omit<Job, 'id' | 'userId'>) => {
+    if (!user) return;
+    try {
+        const docWithUser = { ...newJobData, userId: user.uid };
+        await addDoc(collection(firestore, 'jobs'), docWithUser);
+        loadJobs();
+        toast({ title: 'Success', description: 'Job added successfully.' });
+    } catch (error) {
+        console.error("Error adding job: ", error);
+        toast({ title: 'Error', description: 'Failed to add new job.', variant: 'destructive' });
+    }
   }
   
-  if (!isMounted) {
+  if (loading) {
     return (
         <div className="container px-4 md:px-6 py-12">
             <Card>
@@ -73,7 +110,7 @@ export function JobTracker() {
                 </CardHeader>
                 <CardContent>
                      <div className="text-center py-12 text-muted-foreground">
-                        <Briefcase className="mx-auto h-12 w-12 animate-pulse" />
+                        <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
                         <h3 className="mt-4 text-lg font-semibold">Loading your tracked jobs...</h3>
                     </div>
                 </CardContent>
@@ -135,7 +172,7 @@ export function JobTracker() {
                         </Select>
                       </TableCell>
                       <TableCell className="text-right">
-                         <AddEditJobDialog job={job} onSave={handleUpdateJob} triggerButton={
+                         <AddEditJobDialog job={job} onSave={(data) => handleUpdateJob({ ...data, id: job.id })} triggerButton={
                             <Button variant="ghost" size="icon">
                                 <Edit className="h-4 w-4" />
                             </Button>
@@ -166,7 +203,7 @@ interface AddEditJobDialogProps {
 
 function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [formData, setFormData] = useState<Omit<Job, 'id'>>({
+  const [formData, setFormData] = useState<Omit<Job, 'id' | 'userId'>>({
       companyName: '',
       jobTitle: '',
       location: '',
@@ -190,7 +227,6 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
       setIsOpen(false);
   }
 
-  // Update form data when job prop changes, and reset for new job entry
   useEffect(() => {
     if (isOpen) {
         setFormData(job || {

@@ -13,6 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2 } from 'lucide-react';
 import React, { useState, useTransition } from 'react';
+import { useAuth } from '@/hooks/use-auth';
+import { addDoc, collection } from 'firebase/firestore';
+import { firestore } from '@/lib/firebase';
 
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -20,6 +23,7 @@ export function AtsResumeGenerator() {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleGenerate = () => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
@@ -30,11 +34,18 @@ export function AtsResumeGenerator() {
       });
       return;
     }
+     if (!user) {
+      toast({
+        title: 'Not Authenticated',
+        description: 'You must be logged in to use this feature.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     startTransition(async () => {
       setResult(null);
       try {
-        // Run both AI flows in parallel for efficiency
         const [atsResult, jobDetails] = await Promise.all([
            generateAtsFriendlyResume({ resumeContent, jobDescription }),
            extractJobDetails({ jobDescription })
@@ -42,11 +53,9 @@ export function AtsResumeGenerator() {
 
         setResult(atsResult);
 
-        // Track the job in local storage
         if (jobDetails.companyName && jobDetails.jobTitle) {
-          const storedJobs = JSON.parse(localStorage.getItem('jobs') || '[]');
-          const newJob: Job = {
-            id: new Date().toISOString(),
+          const newJob: Omit<Job, 'id'> = {
+            userId: user.uid,
             ...jobDetails,
             status: 'Saved',
             applicationDate: new Date().toISOString(),
@@ -54,11 +63,9 @@ export function AtsResumeGenerator() {
             jobDescription: jobDescription,
           };
           
-          storedJobs.unshift(newJob);
-          localStorage.setItem('jobs', JSON.stringify(storedJobs));
+          await addDoc(collection(firestore, 'jobs'), newJob);
           
-          // Dispatch a storage event to notify JobTracker to update
-          window.dispatchEvent(new Event('storage'));
+          window.dispatchEvent(new Event('jobAdded'));
           
           toast({
             title: 'Job Tracked!',
