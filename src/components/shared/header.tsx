@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { Briefcase, Info, ShieldCheck } from "lucide-react";
+import { Info, ShieldCheck } from "lucide-react";
 
 export function Header() {
   return (
@@ -13,15 +13,6 @@ export function Header() {
             <span className="font-bold text-xl" style={{color: 'hsl(var(--foreground))'}}>SkillSync</span>
           </Link>
         </div>
-        <nav className="flex items-center space-x-6 text-sm font-medium ml-4">
-           <Link
-            href="/"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
-          >
-             <Briefcase className="mr-2 h-4 w-4" />
-            Job Tracker & Resume Tool
-          </Link>
-        </nav>
         <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">
            <Link
             href="/about"
