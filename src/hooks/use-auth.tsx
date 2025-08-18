@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import type { LoginFormData, SignUpFormData } from '@/lib/types';
+import type { LoginFormData, SignUpFormData, UserData } from '@/lib/types';
 import { useToast } from './use-toast';
 
 interface AuthContextType {
-  user: User | null;
+  user: UserData | null;
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignUpFormData) => Promise<void>;
@@ -19,25 +19,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(firestore, `users/${user.uid}`);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-            setUser({ ...user, ...userDoc.data()});
-        } else {
-             setUser(user);
-        }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
+        
+        const unsubFromDoc = onSnapshot(userDocRef, (userDoc) => {
+            if (userDoc.exists()) {
+                const userData = userDoc.data() as UserData;
+                setUser({
+                    ...firebaseUser,
+                    ...userData,
+                });
+            } else {
+                 setUser(firebaseUser);
+            }
+            setLoading(false);
+        });
+
+        return () => unsubFromDoc();
+
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -62,7 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           uid: newUser.uid,
           email: newUser.email,
           displayName: name,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          subscriptionStatus: 'free',
+          generationsToday: 0,
+          lastGenerationDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD
       });
       router.push('/');
       toast({ title: "Sign Up Successful", description: "Welcome to SkillSync!"});

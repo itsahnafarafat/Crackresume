@@ -2,14 +2,41 @@
 'use client';
 
 import Link from "next/link";
-import { Info, LogOut, ShieldCheck, User as UserIcon } from "lucide-react";
+import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export function Header() {
   const { user, logout } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+        const response = await fetch('/api/stripe/manage-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.uid }),
+        });
+        const { url } = await response.json();
+        if (url) {
+            window.location.href = url;
+        } else {
+            toast({ title: "Error", description: "Could not open subscription management.", variant: "destructive" });
+        }
+    } catch (error) {
+        toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
+        setLoading(false);
+    }
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -20,6 +47,13 @@ export function Header() {
           </Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">
+          <Link
+            href="/pricing"
+            className="hidden sm:flex items-center text-muted-foreground transition-colors hover:text-foreground"
+          >
+             <Star className="mr-2 h-4 w-4" />
+            Pricing
+          </Link>
            <Link
             href="/about"
             className="hidden sm:flex items-center text-muted-foreground transition-colors hover:text-foreground"
@@ -46,6 +80,12 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
+                {user.subscriptionStatus === 'active' && (
+                  <DropdownMenuItem onSelect={handleManageSubscription} disabled={loading}>
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <span>Manage Subscription</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />

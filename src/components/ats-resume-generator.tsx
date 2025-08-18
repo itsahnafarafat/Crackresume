@@ -6,20 +6,31 @@ import type { GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-gene
 import { extractJobDetails } from '@/ai/flows/extract-job-details';
 import type { Job } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download } from 'lucide-react';
+import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star } from 'lucide-react';
 import React, { useState, useTransition } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph } from 'docx';
 import { saveAs } from 'file-saver';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
+const FREE_GENERATION_LIMIT = 3;
 
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -28,6 +39,19 @@ export function AtsResumeGenerator() {
   const [result, setResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  const canGenerate = () => {
+    if (!user) return true; // Guests can always try
+    if (user.subscriptionStatus === 'active') return true;
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (user.lastGenerationDate !== today) {
+        return true; // First generation of the day
+    }
+    
+    return (user.generationsToday || 0) < FREE_GENERATION_LIMIT;
+  }
 
   const handleGenerate = () => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
@@ -38,6 +62,12 @@ export function AtsResumeGenerator() {
       });
       return;
     }
+
+    if (!canGenerate()) {
+        setShowUpgradeDialog(true);
+        return;
+    }
+
 
     startTransition(async () => {
       const isRegeneration = !!result;
@@ -61,6 +91,15 @@ export function AtsResumeGenerator() {
             ]);
     
             setResult(atsResult);
+
+            // Update user generation count
+            const userRef = doc(firestore, 'users', user.uid);
+            const today = new Date().toISOString().split('T')[0];
+            if (user.lastGenerationDate === today) {
+                await updateDoc(userRef, { generationsToday: increment(1) });
+            } else {
+                await updateDoc(userRef, { generationsToday: 1, lastGenerationDate: today });
+            }
     
             if (jobDetails.companyName && jobDetails.jobTitle) {
               const newJob: Omit<Job, 'id'> = {
@@ -156,8 +195,43 @@ export function AtsResumeGenerator() {
     return 'bg-red-500';
   }
 
+  const generationsLeft = user && user.subscriptionStatus === 'free'
+    ? FREE_GENERATION_LIMIT - (user.generationsToday || 0)
+    : null;
+
   return (
     <div className="flex flex-col gap-8">
+      {user && user.subscriptionStatus === 'free' && (
+        <Card className="bg-yellow-50 border-yellow-200">
+            <CardHeader>
+                <CardTitle className="text-yellow-800">Free Plan</CardTitle>
+                <CardDescription className="text-yellow-700">
+                    You have {generationsLeft} generations left today. {' '}
+                    <Link href="/pricing" className="underline font-bold">Upgrade for unlimited generations.</Link>
+                </CardDescription>
+            </CardHeader>
+        </Card>
+      )}
+
+       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>You've reached your daily limit</AlertDialogTitle>
+            <AlertDialogDescription>
+                Free users can generate up to {FREE_GENERATION_LIMIT} resumes per day. Please upgrade to a premium plan for unlimited access.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogAction asChild>
+                <Link href="/pricing">
+                    <Star className="mr-2 h-4 w-4" /> Upgrade
+                </Link>
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
