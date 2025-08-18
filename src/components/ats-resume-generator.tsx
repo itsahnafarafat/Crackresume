@@ -267,16 +267,14 @@ export function AtsResumeGenerator() {
         </Card>
       </div>
 
-       {!result && (
-         <div className="flex justify-center mt-6">
-            <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg">
-                {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                {user ? 'Generate & Track' : 'Generate Resume'}
-            </Button>
-         </div>
-        )}
+       <div className="flex justify-center my-4">
+          <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg">
+              {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
+              {result ? (user ? 'Regenerate & Track' : 'Regenerate Resume') : (user ? 'Generate & Track' : 'Generate Resume')}
+          </Button>
+       </div>
 
-      <div className="space-y-6 mt-8">
+      <div className="space-y-6">
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -300,7 +298,7 @@ export function AtsResumeGenerator() {
                 </div>
             )}
 
-            {result && (
+            {result && !isPending && (
                 <div className="space-y-6 animate-in fade-in-50">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                          <Button onClick={() => copyToClipboard(result.atsFriendlyResume)} className="w-full">
