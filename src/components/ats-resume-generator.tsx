@@ -11,12 +11,15 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2 } from 'lucide-react';
+import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download } from 'lucide-react';
 import React, { useState, useTransition } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph } from 'docx';
+import { saveAs } from 'file-saver';
 
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
@@ -105,6 +108,35 @@ export function AtsResumeGenerator() {
       description: 'The rewritten resume has been copied to your clipboard.',
     });
   };
+
+  const handleDownloadPdf = () => {
+    if (!result) return;
+    const doc = new jsPDF();
+    doc.setFont('Inter', 'normal');
+    doc.setFontSize(11);
+    const text = result.atsFriendlyResume;
+    const lines = doc.splitTextToSize(text, 180); // 180 is the width of the text area in mm
+    doc.text(lines, 15, 20);
+    doc.save('ResuAI-Optimized-Resume.pdf');
+  };
+
+  const handleDownloadDocx = () => {
+    if (!result) return;
+    const textParagraphs = result.atsFriendlyResume.split('\n').map(
+        (text) => new Paragraph({ text })
+    );
+
+    const doc = new Document({
+        sections: [{
+            properties: {},
+            children: textParagraphs,
+        }],
+    });
+
+    Packer.toBlob(doc).then(blob => {
+        saveAs(blob, 'ResuAI-Optimized-Resume.docx');
+    });
+  };
   
   const getScoreColor = (score: number) => {
     if (score >= 85) return 'bg-green-500';
@@ -184,9 +216,15 @@ export function AtsResumeGenerator() {
 
             {result && (
                 <div className="space-y-6 animate-in fade-in-50">
-                    <div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                          <Button onClick={() => copyToClipboard(result.atsFriendlyResume)} className="w-full">
-                            <Clipboard className="mr-2 h-4 w-4" /> Copy Resume Text
+                            <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
+                        </Button>
+                        <Button onClick={handleDownloadPdf} className="w-full" variant="outline">
+                            <Download className="mr-2 h-4 w-4" /> Download PDF
+                        </Button>
+                        <Button onClick={handleDownloadDocx} className="w-full" variant="outline">
+                            <Download className="mr-2 h-4 w-4" /> Download DOCX
                         </Button>
                     </div>
                     <div className="space-y-2">
