@@ -40,11 +40,23 @@ export function AtsResumeGenerator() {
     }
 
     startTransition(async () => {
-      setResult(null);
+      const isRegeneration = !!result;
+      
       try {
+        const payload = {
+            resumeContent,
+            jobDescription,
+            previousAttempt: isRegeneration
+              ? {
+                  resume: result.atsFriendlyResume,
+                  score: result.atsScore,
+                }
+              : undefined,
+          };
+
         if (user) {
             const [atsResult, jobDetails] = await Promise.all([
-               generateAtsFriendlyResume({ resumeContent, jobDescription }),
+               generateAtsFriendlyResume(payload),
                extractJobDetails({ jobDescription })
             ]);
     
@@ -77,7 +89,7 @@ export function AtsResumeGenerator() {
             }
         } else {
             // Unauthenticated user flow
-            const atsResult = await generateAtsFriendlyResume({ resumeContent, jobDescription });
+            const atsResult = await generateAtsFriendlyResume(payload);
             setResult(atsResult);
             toast({
                 title: 'Resume Generated!',
@@ -182,7 +194,7 @@ export function AtsResumeGenerator() {
       </div>
 
        {!result && (
-         <div className="flex justify-center">
+         <div className="flex justify-center mt-6">
             <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg">
                 {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
                 {user ? 'Generate & Track' : 'Generate Resume'}
@@ -190,7 +202,7 @@ export function AtsResumeGenerator() {
          </div>
         )}
 
-      <div className="space-y-6">
+      <div className="space-y-6 mt-8">
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -261,7 +273,7 @@ export function AtsResumeGenerator() {
                     </div>
                      <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
                         {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                         {user ? 'Regenerate & Track' : 'Regenerate Resume'}
+                         {user ? 'Regenerate & Improve' : 'Regenerate & Improve'}
                     </Button>
                 </div>
             )}

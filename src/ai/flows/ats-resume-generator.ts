@@ -16,9 +16,9 @@ const GenerateAtsFriendlyResumeInputSchema = z.object({
   jobDescription: z.string().describe('The job description to tailor the resume to.'),
   previousAttempt: z
     .object({
-      resume: z.string(),
-      score: z.number(),
-      feedback: z.string(),
+      resume: z.string().describe("The previously generated resume text."),
+      score: z.number().describe("The score of the previously generated resume."),
+      feedback: z.string().optional().describe("User feedback on the previous attempt."),
     })
     .optional()
     .describe(
@@ -62,15 +62,17 @@ Previous Resume:
 {{{previousAttempt.resume}}}
 
 Previous Score: {{previousAttempt.score}}
+{{#if previousAttempt.feedback}}
 Previous Feedback: {{previousAttempt.feedback}}
+{{/if}}
 
-You MUST make significant improvements to the resume to increase the score. Analyze the previous feedback and address the shortcomings. Focus on incorporating more keywords from the job description and strengthening the achievements listed.
+You MUST make significant improvements to the resume to increase the score. Analyze the previous attempt and its shortcomings. Focus on incorporating more keywords from the job description and strengthening the achievements listed to achieve a higher ATS score.
 {{/if}}
 
 Do not invent new information. Base the rewritten resume entirely on the content of the original resume and the target job description.
 
 After rewriting the resume, you MUST provide:
-- **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices.
+- **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices. This score should be higher than the previous score if this is a regeneration.
 - **scoreAnalysis**: A very brief, one-sentence analysis of the score. Examples: "Excellent match!", "Good, but some optimization is recommended.", "Needs significant improvement for ATS compatibility."
 - **keyImprovements**: A bulleted list of the most important improvements you made.
 
