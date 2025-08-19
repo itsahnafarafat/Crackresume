@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
@@ -15,11 +16,14 @@ export interface Job {
     jobDescription?: string;
 }
 
-export type SubscriptionStatus = 'free' | 'active' | 'canceled' | 'incomplete';
+export type SubscriptionStatus = 'free' | 'active' | 'cancelled' | 'expired' | 'unpaid' | 'on_trial' | 'past_due';
+
 
 export interface UserData extends FirebaseUser {
-    stripeCustomerId?: string;
+    lemonSqueezyId?: string;
+    lemonSqueezySubscriptionId?: string;
     subscriptionStatus?: SubscriptionStatus;
+    updatePaymentMethodUrl?: string;
     generationsToday?: number;
     lastGenerationDate?: string;
 }
