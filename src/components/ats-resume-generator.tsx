@@ -141,13 +141,21 @@ export function AtsResumeGenerator() {
             });
         }
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Generation Error:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to generate the resume or track the job. Please try again.',
-          variant: 'destructive',
-        });
+        if (error.message && error.message.includes('503 Service Unavailable')) {
+             toast({
+                title: 'AI Service Unavailable',
+                description: 'The AI model is currently overloaded. Please try again in a few moments.',
+                variant: 'destructive',
+            });
+        } else {
+            toast({
+              title: 'Error',
+              description: 'Failed to generate the resume or track the job. Please try again.',
+              variant: 'destructive',
+            });
+        }
       }
     });
   };
@@ -355,3 +363,5 @@ export function AtsResumeGenerator() {
     </div>
   );
 }
+
+    
