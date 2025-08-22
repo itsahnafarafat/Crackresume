@@ -22,13 +22,13 @@ const plans = [
   {
     name: 'Monthly',
     price: '$10/month',
-    checkoutUrl: 'https://YOUR_STORE.lemonsqueezy.com/buy/VARIANT_ID_MONTHLY', // Replace with your actual checkout link
+    checkoutUrl: 'https://skillsyncpro.lemonsqueezy.com/buy/f057d01c-5650-4b4a-960a-65b1868b65c7', // Replace with your actual checkout link
     features: ['Unlimited Resume Generations', 'Full Job Tracker Access', 'Priority Support'],
   },
   {
     name: 'Yearly',
     price: '$100/year',
-    checkoutUrl: 'https://YOUR_STORE.lemonsqueezy.com/buy/VARIANT_ID_YEARLY', // Replace with your actual checkout link
+    checkoutUrl: 'https://skillsyncpro.lemonsqueezy.com/buy/5bc9af3a-2c55-47ba-9b46-01f4c2ef3606?discount=0', // Replace with your actual checkout link
     features: ['Unlimited Resume Generations', 'Full Job Tracker Access', 'Priority Support', 'Save 16%'],
   },
 ];
