@@ -18,7 +18,7 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from '
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -78,7 +78,7 @@ export function AtsResumeGenerator() {
             jobDescription,
             previousAttempt: isRegeneration
               ? {
-                  resume: result.atsFriendlyResume,
+                  resume: result.atsFriendlyResumeText,
                   score: result.atsScore,
                 }
               : undefined,
@@ -170,26 +170,133 @@ export function AtsResumeGenerator() {
 
   const handleDownloadPdf = () => {
     if (!result) return;
-    const doc = new jsPDF();
-    doc.setFont('Inter', 'normal');
-    doc.setFontSize(11);
-    const text = result.atsFriendlyResume;
-    const lines = doc.splitTextToSize(text, 180); // 180 is the width of the text area in mm
-    doc.text(lines, 15, 20);
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    doc.setFont('times', 'normal');
+
+    let y = 40; // Initial Y position
+    const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const usableWidth = pageWidth - margin * 2;
+    
+    const addText = (text: string, size: number, isBold: boolean, isSubheading = false, isDetail = false) => {
+        if (y > doc.internal.pageSize.getHeight() - margin) {
+            doc.addPage();
+            y = margin;
+        }
+        doc.setFontSize(size);
+        doc.setFont('times', isBold ? 'bold' : 'normal');
+
+        const textLines = doc.splitTextToSize(text, usableWidth);
+        
+        // Handle indent for subheadings
+        let x = margin;
+        if(isSubheading || isDetail) {
+             x = margin;
+        }
+
+        doc.text(textLines, x, y);
+        y += textLines.length * size * 1.2;
+    }
+
+    const addBullet = (text: string) => {
+        if (y > doc.internal.pageSize.getHeight() - margin) {
+            doc.addPage();
+            y = margin;
+        }
+        doc.setFontSize(11);
+        doc.setFont('times', 'normal');
+        
+        const bulletText = `• ${text}`;
+        const textLines = doc.splitTextToSize(bulletText, usableWidth - 15);
+        doc.text(textLines, margin + 15, y);
+        y += textLines.length * 11 * 1.2;
+    }
+
+    result.atsFriendlyResume.forEach(section => {
+        addText(section.heading, 14, true);
+        y += 5;
+
+        section.content.forEach(item => {
+            switch (item.type) {
+                case 'paragraph':
+                    addText(item.text, 11, false);
+                    y += 5;
+                    break;
+                case 'subheading':
+                    addText(item.text, 12, true, true);
+                    break;
+                case 'detail':
+                    addText(item.text, 10, false, false, true);
+                    break;
+                case 'bullet':
+                    addBullet(item.text);
+                    break;
+            }
+        });
+        y += 10; // Space between sections
+    });
+
     doc.save('Crackresume-Optimized-Resume.pdf');
   };
 
   const handleDownloadDocx = () => {
     if (!result) return;
-    const textParagraphs = result.atsFriendlyResume.split('\n').map(
-        (text) => new Paragraph({ text })
-    );
+    
+    const children: Paragraph[] = [];
+
+    result.atsFriendlyResume.forEach(section => {
+        children.push(
+            new Paragraph({
+                children: [new TextRun({ text: section.heading, bold: true, size: 28 })], // 14pt
+                spacing: { after: 120 }, // 6pt
+            })
+        );
+
+        section.content.forEach(item => {
+            switch (item.type) {
+                case 'paragraph':
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, size: 22 })], // 11pt
+                        spacing: { after: 100 },
+                    }));
+                    break;
+                case 'subheading':
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, bold: true, size: 24 })], // 12pt
+                    }));
+                    break;
+                case 'detail':
+                     children.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, size: 20, italics: true })], // 10pt
+                    }));
+                    break;
+                case 'bullet':
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, size: 22 })], // 11pt
+                        bullet: { level: 0 },
+                        indent: { left: 720 },
+                    }));
+                    break;
+            }
+        });
+
+        children.push(new Paragraph({ spacing: { after: 240 }})); // 12pt space after section
+    });
 
     const doc = new Document({
-        sections: [{
-            properties: {},
-            children: textParagraphs,
-        }],
+      sections: [{
+          properties: {},
+          children: children,
+      }],
+      styles: {
+        default: {
+          document: {
+            run: {
+              font: "Times New Roman",
+            },
+          },
+        },
+      }
     });
 
     Packer.toBlob(doc).then(blob => {
@@ -309,7 +416,7 @@ export function AtsResumeGenerator() {
             {result && !isPending && (
                 <div className="space-y-6 animate-in fade-in-50">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                         <Button onClick={() => copyToClipboard(result.atsFriendlyResume)} className="w-full">
+                         <Button onClick={() => copyToClipboard(result.atsFriendlyResumeText)} className="w-full">
                             <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
                         </Button>
                         <Button onClick={handleDownloadPdf} className="w-full" variant="outline">
@@ -347,7 +454,7 @@ export function AtsResumeGenerator() {
                         <h3 className="font-semibold mb-2">Optimized Resume</h3>
                         <Textarea
                             readOnly
-                            value={result.atsFriendlyResume}
+                            value={result.atsFriendlyResumeText}
                             className="h-[400px] bg-muted/50 text-sm"
                         />
                     </div>
@@ -363,7 +470,3 @@ export function AtsResumeGenerator() {
     </div>
   );
 }
-
-    
-
-    

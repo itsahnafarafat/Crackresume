@@ -52,3 +52,15 @@ export const signUpFormSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginFormSchema>;
 export type SignUpFormData = z.infer<typeof signUpFormSchema>;
+
+export const ResumeSectionSchema = z.object({
+    heading: z.string().describe('The heading for this section (e.g., "Professional Summary", "Work Experience", "Skills").'),
+    content: z.array(
+        z.object({
+            type: z.enum(['paragraph', 'bullet', 'subheading', 'detail']).describe('The type of content element.'),
+            text: z.string().describe('The text content of the element.'),
+        })
+    ).describe('An array of content elements within the section.'),
+});
+
+export const StructuredResumeSchema = z.array(ResumeSectionSchema);
