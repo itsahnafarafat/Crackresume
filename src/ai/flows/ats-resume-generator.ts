@@ -52,7 +52,10 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert resume writer specializing in optimizing resumes for Applicant Tracking Systems (ATS).
 Your task is to rewrite the provided resume to make it highly compatible with ATS while tailoring it to the specific job description provided.
 
-The output MUST be a structured JSON object adhering to the provided schema. The resume should be broken down into sections (like "Professional Summary", "Work Experience", "Education", "Skills").
+The output MUST be a structured JSON object adhering to the provided schema.
+
+First, extract the candidate's personal details from the original resume.
+The resume should then be broken down into standard sections (like "Professional Summary", "Work Experience", "Education", "Skills").
 Each section must have a heading and an array of content elements.
 Content elements can be of these types:
 - 'paragraph': For summary text.

@@ -53,7 +53,14 @@ export const signUpFormSchema = z.object({
 export type LoginFormData = z.infer<typeof loginFormSchema>;
 export type SignUpFormData = z.infer<typeof signUpFormSchema>;
 
-export const ResumeSectionSchema = z.object({
+const PersonalDetailsSchema = z.object({
+    name: z.string().describe('Full name of the candidate.'),
+    email: z.string().optional().describe('Email address.'),
+    phone: z.string().optional().describe('Phone number.'),
+    linkedin: z.string().optional().describe('LinkedIn profile URL.'),
+});
+
+const ResumeSectionSchema = z.object({
     heading: z.string().describe('The heading for this section (e.g., "Professional Summary", "Work Experience", "Skills").'),
     content: z.array(
         z.object({
@@ -63,4 +70,9 @@ export const ResumeSectionSchema = z.object({
     ).describe('An array of content elements within the section.'),
 });
 
-export const StructuredResumeSchema = z.array(ResumeSectionSchema);
+export const StructuredResumeSchema = z.object({
+    personalDetails: PersonalDetailsSchema,
+    sections: z.array(ResumeSectionSchema),
+});
+
+export type StructuredResume = z.infer<typeof StructuredResumeSchema>;

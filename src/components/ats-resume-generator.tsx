@@ -4,7 +4,7 @@
 import { generateAtsFriendlyResume } from '@/ai/flows/ats-resume-generator';
 import type { GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
 import { extractJobDetails } from '@/ai/flows/extract-job-details';
-import type { Job } from '@/lib/types';
+import type { Job, StructuredResume } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -18,7 +18,7 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from '
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet, PageBreak, PageNumber, Footer, Header, HorizontalRule, PageSize, VerticalPositionAlign, HeightRule, VerticalAlign, convertInchesToTwip, Tab, TabStopPosition, TabStopType, WidthType, Table, TableRow, TableCell } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -169,123 +169,163 @@ export function AtsResumeGenerator() {
   };
 
   const handleDownloadPdf = () => {
-    if (!result) return;
+    if (!result?.atsFriendlyResume) return;
+
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     doc.setFont('times', 'normal');
 
-    let y = 40; // Initial Y position
     const margin = 40;
     const pageWidth = doc.internal.pageSize.getWidth();
     const usableWidth = pageWidth - margin * 2;
-    
-    const addText = (text: string, size: number, isBold: boolean, isSubheading = false, isDetail = false) => {
-        if (y > doc.internal.pageSize.getHeight() - margin) {
-            doc.addPage();
-            y = margin;
-        }
+    let y = margin;
+    const lineHeight = 1.2;
+    const smallFontSize = 9;
+    const normalFontSize = 10.5;
+    const subheadingFontSize = 11;
+    const headingFontSize = 12;
+    const nameFontSize = 22;
+
+    const addText = (text: string, size: number, options: { isBold?: boolean; align?: 'center' | 'left' | 'right'; color?: string } = {}) => {
+        if (y > doc.internal.pageSize.getHeight() - margin) return;
         doc.setFontSize(size);
-        doc.setFont('times', isBold ? 'bold' : 'normal');
-
-        const textLines = doc.splitTextToSize(text, usableWidth);
-        
-        // Handle indent for subheadings
-        let x = margin;
-        if(isSubheading || isDetail) {
-             x = margin;
+        doc.setFont('times', options.isBold ? 'bold' : 'normal');
+        if (options.color) {
+            doc.setTextColor(options.color);
         }
-
-        doc.text(textLines, x, y);
-        y += textLines.length * size * 1.2;
-    }
+        const textLines = doc.splitTextToSize(text, usableWidth);
+        doc.text(textLines, options.align === 'center' ? pageWidth / 2 : margin, y, { align: options.align || 'left' });
+        y += (textLines.length * size * lineHeight);
+        doc.setTextColor('#000000'); // Reset color
+    };
 
     const addBullet = (text: string) => {
-        if (y > doc.internal.pageSize.getHeight() - margin) {
-            doc.addPage();
-            y = margin;
-        }
-        doc.setFontSize(11);
+        if (y > doc.internal.pageSize.getHeight() - margin) return;
+        doc.setFontSize(normalFontSize);
         doc.setFont('times', 'normal');
-        
-        const bulletText = `• ${text}`;
-        const textLines = doc.splitTextToSize(bulletText, usableWidth - 15);
-        doc.text(textLines, margin + 15, y);
-        y += textLines.length * 11 * 1.2;
+        const bulletText = `•  ${text}`;
+        const textLines = doc.splitTextToSize(bulletText, usableWidth - 10);
+        doc.text(textLines, margin + 10, y);
+        y += textLines.length * normalFontSize * lineHeight * 0.95;
+    };
+
+    const addLine = () => {
+        y += 2;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 8;
     }
 
-    result.atsFriendlyResume.forEach(section => {
-        addText(section.heading, 14, true);
-        y += 5;
+    const { personalDetails, sections } = result.atsFriendlyResume;
+
+    // --- Header ---
+    if(personalDetails.name) addText(personalDetails.name, nameFontSize, { isBold: true, align: 'center' });
+    const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
+    if(contactInfo) addText(contactInfo, smallFontSize, { align: 'center' });
+    y += 5;
+    
+    // --- Sections ---
+    sections.forEach(section => {
+        addText(section.heading.toUpperCase(), headingFontSize, { isBold: true });
+        addLine();
 
         section.content.forEach(item => {
             switch (item.type) {
                 case 'paragraph':
-                    addText(item.text, 11, false);
+                    addText(item.text, normalFontSize);
                     y += 5;
                     break;
                 case 'subheading':
-                    addText(item.text, 12, true, true);
+                    addText(item.text, subheadingFontSize, { isBold: true });
                     break;
                 case 'detail':
-                    addText(item.text, 10, false, false, true);
+                    addText(item.text, smallFontSize);
+                    y += 2;
                     break;
                 case 'bullet':
                     addBullet(item.text);
                     break;
             }
         });
-        y += 10; // Space between sections
+        y += 10;
     });
 
     doc.save('Crackresume-Optimized-Resume.pdf');
   };
 
   const handleDownloadDocx = () => {
-    if (!result) return;
-    
+    if (!result?.atsFriendlyResume) return;
+
+    const { personalDetails, sections } = result.atsFriendlyResume;
     const children: Paragraph[] = [];
 
-    result.atsFriendlyResume.forEach(section => {
-        children.push(
-            new Paragraph({
-                children: [new TextRun({ text: section.heading, bold: true, size: 28 })], // 14pt
-                spacing: { after: 120 }, // 6pt
-            })
-        );
+    // --- Header ---
+    if(personalDetails.name) {
+        children.push(new Paragraph({
+            children: [new TextRun({ text: personalDetails.name, bold: true, size: 44 })], // 22pt
+            alignment: AlignmentType.CENTER,
+        }));
+    }
+    const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
+    if(contactInfo) {
+        children.push(new Paragraph({
+            children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 },
+        }));
+    }
+
+    // --- Sections ---
+    sections.forEach(section => {
+        children.push(new Paragraph({
+            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
+            spacing: { before: 100, after: 60 },
+            border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } },
+        }));
 
         section.content.forEach(item => {
             switch (item.type) {
                 case 'paragraph':
                     children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 22 })], // 11pt
+                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
                         spacing: { after: 100 },
                     }));
                     break;
                 case 'subheading':
                     children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, bold: true, size: 24 })], // 12pt
+                        children: [new TextRun({ text: item.text, bold: true, size: 22 })], // 11pt
+                        spacing: { after: 0, before: 40 },
                     }));
                     break;
                 case 'detail':
                      children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 20, italics: true })], // 10pt
+                        children: [new TextRun({ text: item.text, size: 18, italics: true })], // 9pt
+                        spacing: { after: 40 },
                     }));
                     break;
                 case 'bullet':
                     children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 22 })], // 11pt
+                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
                         bullet: { level: 0 },
-                        indent: { left: 720 },
+                        indent: { left: convertInchesToTwip(0.25) },
+                        spacing: { after: 40 },
                     }));
                     break;
             }
         });
-
-        children.push(new Paragraph({ spacing: { after: 240 }})); // 12pt space after section
     });
 
     const doc = new Document({
       sections: [{
-          properties: {},
+          properties: {
+              page: {
+                  margin: {
+                      top: convertInchesToTwip(0.5),
+                      right: convertInchesToTwip(0.5),
+                      bottom: convertInchesToTwip(0.5),
+                      left: convertInchesToTwip(0.5),
+                  },
+              },
+          },
           children: children,
       }],
       styles: {
