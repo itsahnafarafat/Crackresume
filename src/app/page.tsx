@@ -35,7 +35,7 @@ export default function Home() {
             <Link href="/about" className="text-sm text-muted-foreground hover:underline">About</Link>
             <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">Privacy Policy</Link>
           </div>
-          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SkillSync. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Crackresume. All rights reserved.</p>
       </footer>
     </div>
   );

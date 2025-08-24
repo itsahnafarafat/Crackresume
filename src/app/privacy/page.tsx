@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
           <div className="max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">Privacy Policy</h1>
             <p className="mt-6 text-xl text-gray-600">
-              Your privacy is important to us. It is SkillSync&apos;s policy to respect your privacy regarding any information we may collect from you across our website.
+              Your privacy is important to us. It is Crackresume&apos;s policy to respect your privacy regarding any information we may collect from you across our website.
             </p>
             <div className="mt-10 prose prose-lg text-gray-500">
               <h2 className="text-2xl font-bold">1. Information we collect</h2>
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
         </div>
       </main>
        <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t">
-          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} SkillSync. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Crackresume. All rights reserved.</p>
       </footer>
     </div>
   );

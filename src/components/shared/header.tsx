@@ -27,7 +27,7 @@ export function Header() {
       <div className="container flex h-14 items-center">
         <div className="mr-4 flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl" style={{color: 'hsl(var(--foreground))'}}>SkillSync</span>
+            <span className="font-bold text-xl" style={{color: 'hsl(var(--foreground))'}}>Crackresume</span>
           </Link>
         </div>
         <nav className="flex items-center space-x-6 text-sm font-medium ml-auto">

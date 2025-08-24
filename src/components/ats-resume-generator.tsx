@@ -176,7 +176,7 @@ export function AtsResumeGenerator() {
     const text = result.atsFriendlyResume;
     const lines = doc.splitTextToSize(text, 180); // 180 is the width of the text area in mm
     doc.text(lines, 15, 20);
-    doc.save('SkillSync-Optimized-Resume.pdf');
+    doc.save('Crackresume-Optimized-Resume.pdf');
   };
 
   const handleDownloadDocx = () => {
@@ -193,7 +193,7 @@ export function AtsResumeGenerator() {
     });
 
     Packer.toBlob(doc).then(blob => {
-        saveAs(blob, 'SkillSync-Optimized-Resume.docx');
+        saveAs(blob, 'Crackresume-Optimized-Resume.docx');
     });
   };
   

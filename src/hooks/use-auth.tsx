@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           lastGenerationDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD
       });
       router.push('/');
-      toast({ title: "Sign Up Successful", description: "Welcome to SkillSync!"});
+      toast({ title: "Sign Up Successful", description: "Welcome to Crackresume!"});
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({ title: "Sign Up Failed", description: error.message, variant: 'destructive' });
