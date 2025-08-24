@@ -170,178 +170,202 @@ export function AtsResumeGenerator() {
 
   const handleDownloadPdf = () => {
     if (!result?.atsFriendlyResume) return;
-
+  
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     doc.setFont('times', 'normal');
-
+  
     const margin = 40;
     const pageWidth = doc.internal.pageSize.getWidth();
     const usableWidth = pageWidth - margin * 2;
     let y = margin;
-    const lineHeight = 1.2;
+    const lineHeight = 1.15;
     const smallFontSize = 9;
     const normalFontSize = 10.5;
     const subheadingFontSize = 11;
     const headingFontSize = 12;
-    const nameFontSize = 22;
-
-    const addText = (text: string, size: number, options: { isBold?: boolean; align?: 'center' | 'left' | 'right'; color?: string } = {}) => {
-        if (y > doc.internal.pageSize.getHeight() - margin) return;
-        doc.setFontSize(size);
+    const nameFontSize = 24;
+  
+    const addText = (text: string, x: number, currentY: number, options: { isBold?: boolean; size?: number; align?: 'center' | 'left' | 'right'; color?: string } = {}) => {
+        if (!text) return currentY;
+        doc.setFontSize(options.size || normalFontSize);
         doc.setFont('times', options.isBold ? 'bold' : 'normal');
-        if (options.color) {
-            doc.setTextColor(options.color);
-        }
-        const textLines = doc.splitTextToSize(text, usableWidth);
-        doc.text(textLines, options.align === 'center' ? pageWidth / 2 : margin, y, { align: options.align || 'left' });
-        y += (textLines.length * size * lineHeight);
-        doc.setTextColor('#000000'); // Reset color
+        if (options.color) doc.setTextColor(options.color);
+  
+        const textWidth = doc.getStringUnitWidth(text) * (options.size || normalFontSize) / doc.internal.scaleFactor;
+        let textX = x;
+        if (options.align === 'center') textX = pageWidth / 2;
+        if (options.align === 'right') textX = pageWidth - margin;
+  
+        doc.text(text, textX, currentY, { align: options.align || 'left' });
+        doc.setTextColor('#000000');
+        return currentY;
     };
-
-    const addBullet = (text: string) => {
-        if (y > doc.internal.pageSize.getHeight() - margin) return;
-        doc.setFontSize(normalFontSize);
-        doc.setFont('times', 'normal');
-        const bulletText = `•  ${text}`;
-        const textLines = doc.splitTextToSize(bulletText, usableWidth - 10);
-        doc.text(textLines, margin + 10, y);
-        y += textLines.length * normalFontSize * lineHeight * 0.95;
-    };
-
-    const addLine = () => {
-        y += 2;
-        doc.setDrawColor(200, 200, 200);
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 8;
+  
+    const addLine = (currentY: number) => {
+        const newY = currentY + 2;
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.75);
+        doc.line(margin, newY, pageWidth - margin, newY);
+        return newY + 8;
     }
-
+  
     const { personalDetails, sections } = result.atsFriendlyResume;
-
+  
     // --- Header ---
-    if(personalDetails.name) addText(personalDetails.name, nameFontSize, { isBold: true, align: 'center' });
+    if (personalDetails.name) {
+        addText(personalDetails.name.toUpperCase(), margin, y, { size: nameFontSize, isBold: true, align: 'center' });
+        y += nameFontSize * 0.7;
+    }
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
-    if(contactInfo) addText(contactInfo, smallFontSize, { align: 'center' });
-    y += 5;
-    
+    if (contactInfo) {
+        addText(contactInfo, margin, y, { size: smallFontSize, align: 'center' });
+        y += smallFontSize * lineHeight + 15;
+    }
+  
     // --- Sections ---
     sections.forEach(section => {
-        addText(section.heading.toUpperCase(), headingFontSize, { isBold: true });
-        addLine();
-
+        if (y > doc.internal.pageSize.getHeight() - margin * 2) return;
+  
+        addText(section.heading.toUpperCase(), margin, y, { size: headingFontSize, isBold: true });
+        y = addLine(y);
+  
         section.content.forEach(item => {
+            if (y > doc.internal.pageSize.getHeight() - margin) return;
+  
             switch (item.type) {
                 case 'paragraph':
-                    addText(item.text, normalFontSize);
+                    const paraLines = doc.splitTextToSize(item.text, usableWidth);
+                    doc.setFontSize(normalFontSize);
+                    doc.text(paraLines, margin, y);
+                    y += paraLines.length * normalFontSize * lineHeight;
                     y += 5;
                     break;
                 case 'subheading':
-                    addText(item.text, subheadingFontSize, { isBold: true });
+                    const [leftText, rightText] = item.text.split('||');
+                    addText(leftText.trim(), margin, y, { size: subheadingFontSize, isBold: true });
+                    if(rightText) addText(rightText.trim(), margin, y, { size: subheadingFontSize, align: 'right' });
+                    y += subheadingFontSize * lineHeight;
                     break;
                 case 'detail':
-                    addText(item.text, smallFontSize);
-                    y += 2;
+                    doc.setFontSize(smallFontSize);
+                    doc.setFont('times', 'italic');
+                    doc.text(item.text, margin, y);
+                    doc.setFont('times', 'normal');
+                    y += smallFontSize * lineHeight;
+                    y += 5;
                     break;
                 case 'bullet':
-                    addBullet(item.text);
+                    const bulletLines = doc.splitTextToSize(item.text, usableWidth - 15);
+                    addText('•', margin + 5, y + normalFontSize * 0.2, { size: normalFontSize });
+                    doc.setFontSize(normalFontSize);
+                    doc.text(bulletLines, margin + 15, y);
+                    y += bulletLines.length * normalFontSize * lineHeight;
+                    y += 2;
                     break;
             }
         });
         y += 10;
     });
-
+  
     doc.save('Crackresume-Optimized-Resume.pdf');
   };
-
-  const handleDownloadDocx = () => {
-    if (!result?.atsFriendlyResume) return;
-
-    const { personalDetails, sections } = result.atsFriendlyResume;
-    const children: Paragraph[] = [];
-
-    // --- Header ---
-    if(personalDetails.name) {
-        children.push(new Paragraph({
-            children: [new TextRun({ text: personalDetails.name, bold: true, size: 44 })], // 22pt
-            alignment: AlignmentType.CENTER,
-        }));
-    }
-    const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
-    if(contactInfo) {
-        children.push(new Paragraph({
-            children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
-            alignment: AlignmentType.CENTER,
-            spacing: { after: 100 },
-        }));
-    }
-
-    // --- Sections ---
-    sections.forEach(section => {
-        children.push(new Paragraph({
-            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
-            spacing: { before: 100, after: 60 },
-            border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } },
-        }));
-
-        section.content.forEach(item => {
-            switch (item.type) {
-                case 'paragraph':
-                    children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                        spacing: { after: 100 },
-                    }));
-                    break;
-                case 'subheading':
-                    children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, bold: true, size: 22 })], // 11pt
-                        spacing: { after: 0, before: 40 },
-                    }));
-                    break;
-                case 'detail':
-                     children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 18, italics: true })], // 9pt
-                        spacing: { after: 40 },
-                    }));
-                    break;
-                case 'bullet':
-                    children.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                        bullet: { level: 0 },
-                        indent: { left: convertInchesToTwip(0.25) },
-                        spacing: { after: 40 },
-                    }));
-                    break;
-            }
-        });
-    });
-
-    const doc = new Document({
-      sections: [{
-          properties: {
-              page: {
-                  margin: {
-                      top: convertInchesToTwip(0.5),
-                      right: convertInchesToTwip(0.5),
-                      bottom: convertInchesToTwip(0.5),
-                      left: convertInchesToTwip(0.5),
+  
+  const handleDownloadDocx = async () => {
+      if (!result?.atsFriendlyResume) return;
+  
+      const { personalDetails, sections } = result.atsFriendlyResume;
+      const children: Paragraph[] = [];
+  
+      // --- Header ---
+      if (personalDetails.name) {
+          children.push(new Paragraph({
+              children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 48 })], // 24pt
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 0 },
+          }));
+      }
+      const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
+      if (contactInfo) {
+          children.push(new Paragraph({
+              children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 300 },
+          }));
+      }
+  
+      // --- Sections ---
+      sections.forEach(section => {
+          children.push(new Paragraph({
+              children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
+              spacing: { before: 200, after: 60 },
+              border: { bottom: { color: "auto", space: 1, style: "single", size: 6 } },
+          }));
+  
+          section.content.forEach(item => {
+              switch (item.type) {
+                  case 'paragraph':
+                      children.push(new Paragraph({
+                          children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
+                          spacing: { after: 100 },
+                      }));
+                      break;
+                  case 'subheading':
+                      const [leftText, rightText] = item.text.split('||');
+                      children.push(new Paragraph({
+                          children: [
+                              new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
+                              new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
+                          ],
+                          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }]
+                      }));
+                      break;
+                  case 'detail':
+                      children.push(new Paragraph({
+                          children: [new TextRun({ text: item.text, size: 21, italics: true })], // 10.5pt
+                          spacing: { after: 100 },
+                      }));
+                      break;
+                  case 'bullet':
+                      children.push(new Paragraph({
+                          children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
+                          bullet: { level: 0 },
+                          indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
+                          spacing: { after: 40 },
+                      }));
+                      break;
+              }
+          });
+      });
+  
+      const doc = new Document({
+          sections: [{
+              properties: {
+                  page: {
+                      margin: {
+                          top: convertInchesToTwip(0.7),
+                          right: convertInchesToTwip(0.7),
+                          bottom: convertInchesToTwip(0.7),
+                          left: convertInchesToTwip(0.7),
+                      },
                   },
               },
-          },
-          children: children,
-      }],
-      styles: {
-        default: {
-          document: {
-            run: {
-              font: "Times New Roman",
-            },
-          },
-        },
-      }
-    });
-
-    Packer.toBlob(doc).then(blob => {
-        saveAs(blob, 'Crackresume-Optimized-Resume.docx');
-    });
+              children: children,
+          }],
+          styles: {
+              default: {
+                  document: {
+                      run: { font: "Times New Roman", size: 21 }, // 10.5pt default
+                      paragraph: {
+                          spacing: { line: 276, before: 0, after: 160 }, // 1.15 line spacing, 8pt after
+                      }
+                  },
+              },
+          }
+      });
+  
+      Packer.toBlob(doc).then(blob => {
+          saveAs(blob, 'Crackresume-Optimized-Resume.docx');
+      });
   };
   
   const getScoreColor = (score: number) => {
