@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Logo } from "./logo";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -28,7 +27,6 @@ export function Header() {
       <div className="container flex h-14 items-center">
         <div className="mr-4 flex items-center">
           <Link href="/" className="flex items-center space-x-2">
-            <Logo />
             <span className="font-bold text-xl" style={{color: 'hsl(var(--foreground))'}}>Crackresume</span>
           </Link>
         </div>
