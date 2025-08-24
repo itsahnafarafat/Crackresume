@@ -18,7 +18,7 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from '
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet, PageBreak, PageNumber, Footer, Header, HorizontalRule, PageSize, VerticalPositionAlign, HeightRule, VerticalAlign, convertInchesToTwip, Tab, TabStopPosition, TabStopType, WidthType, Table, TableRow, TableCell } from 'docx';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet, PageBreak, PageNumber, Footer, Header, HorizontalRule, PageSize, VerticalPositionAlign, HeightRule, VerticalAlign, convertInchesToTwip, Tab, TabStopPosition, TabStopType, WidthType, Table, TableRow, TableCell, BorderStyle } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -168,12 +168,12 @@ export function AtsResumeGenerator() {
     });
   };
 
-  const handleDownloadPdf = () => {
+ const handleDownloadPdf = () => {
     if (!result?.atsFriendlyResume) return;
-  
+
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     doc.setFont('times', 'normal');
-  
+
     const margin = 40;
     const pageWidth = doc.internal.pageSize.getWidth();
     const usableWidth = pageWidth - margin * 2;
@@ -184,54 +184,55 @@ export function AtsResumeGenerator() {
     const subheadingFontSize = 11;
     const headingFontSize = 12;
     const nameFontSize = 24;
-  
+
     const addText = (text: string, x: number, currentY: number, options: { isBold?: boolean; size?: number; align?: 'center' | 'left' | 'right'; color?: string } = {}) => {
         if (!text) return currentY;
         doc.setFontSize(options.size || normalFontSize);
         doc.setFont('times', options.isBold ? 'bold' : 'normal');
         if (options.color) doc.setTextColor(options.color);
-  
+
         const textWidth = doc.getStringUnitWidth(text) * (options.size || normalFontSize) / doc.internal.scaleFactor;
         let textX = x;
         if (options.align === 'center') textX = pageWidth / 2;
         if (options.align === 'right') textX = pageWidth - margin;
-  
-        doc.text(text, textX, currentY, { align: options.align || 'left' });
+
+        doc.text(text, textX, currentY, { align: options.align || 'left', baseline: 'top' });
         doc.setTextColor('#000000');
         return currentY;
     };
-  
+
     const addLine = (currentY: number) => {
         const newY = currentY + 2;
         doc.setDrawColor(0, 0, 0);
         doc.setLineWidth(0.75);
         doc.line(margin, newY, pageWidth - margin, newY);
-        return newY + 8;
+        return newY + 12; // Increased gap after line
     }
-  
+
     const { personalDetails, sections } = result.atsFriendlyResume;
-  
+
     // --- Header ---
     if (personalDetails.name) {
-        addText(personalDetails.name.toUpperCase(), margin, y, { size: nameFontSize, isBold: true, align: 'center' });
-        y += nameFontSize * 0.7;
+        addText(personalDetails.name.toUpperCase(), pageWidth / 2, y, { size: nameFontSize, isBold: true, align: 'center' });
+        y += nameFontSize * 0.9;
     }
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
     if (contactInfo) {
-        addText(contactInfo, margin, y, { size: smallFontSize, align: 'center' });
+        addText(contactInfo, pageWidth / 2, y, { size: smallFontSize, align: 'center' });
         y += smallFontSize * lineHeight + 15;
     }
-  
+
     // --- Sections ---
     sections.forEach(section => {
         if (y > doc.internal.pageSize.getHeight() - margin * 2) return;
-  
+
         addText(section.heading.toUpperCase(), margin, y, { size: headingFontSize, isBold: true });
+        y += headingFontSize * lineHeight - 4;
         y = addLine(y);
-  
+
         section.content.forEach(item => {
             if (y > doc.internal.pageSize.getHeight() - margin) return;
-  
+
             switch (item.type) {
                 case 'paragraph':
                     const paraLines = doc.splitTextToSize(item.text, usableWidth);
@@ -243,7 +244,7 @@ export function AtsResumeGenerator() {
                 case 'subheading':
                     const [leftText, rightText] = item.text.split('||');
                     addText(leftText.trim(), margin, y, { size: subheadingFontSize, isBold: true });
-                    if(rightText) addText(rightText.trim(), margin, y, { size: subheadingFontSize, align: 'right' });
+                    if(rightText) addText(rightText.trim(), 0, y, { size: subheadingFontSize, isBold: true, align: 'right' });
                     y += subheadingFontSize * lineHeight;
                     break;
                 case 'detail':
@@ -255,10 +256,10 @@ export function AtsResumeGenerator() {
                     y += 5;
                     break;
                 case 'bullet':
-                    const bulletLines = doc.splitTextToSize(item.text, usableWidth - 15);
-                    addText('•', margin + 5, y + normalFontSize * 0.2, { size: normalFontSize });
+                    const bulletLines = doc.splitTextToSize(item.text, usableWidth - 20);
+                    addText('•', margin + 5, y, { size: normalFontSize });
                     doc.setFontSize(normalFontSize);
-                    doc.text(bulletLines, margin + 15, y);
+                    doc.text(bulletLines, margin + 20, y);
                     y += bulletLines.length * normalFontSize * lineHeight;
                     y += 2;
                     break;
@@ -266,7 +267,7 @@ export function AtsResumeGenerator() {
         });
         y += 10;
     });
-  
+
     doc.save('Crackresume-Optimized-Resume.pdf');
   };
   
@@ -297,8 +298,8 @@ export function AtsResumeGenerator() {
       sections.forEach(section => {
           children.push(new Paragraph({
               children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
-              spacing: { before: 200, after: 60 },
-              border: { bottom: { color: "auto", space: 1, style: "single", size: 6 } },
+              spacing: { before: 200, after: 120 }, // Increased gap after line
+              border: { bottom: { color: "auto", space: 6, value: "single", size: 6 } },
           }));
   
           section.content.forEach(item => {
@@ -321,7 +322,7 @@ export function AtsResumeGenerator() {
                       break;
                   case 'detail':
                       children.push(new Paragraph({
-                          children: [new TextRun({ text: item.text, size: 21, italics: true })], // 10.5pt
+                          children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
                           spacing: { after: 100 },
                       }));
                       break;
