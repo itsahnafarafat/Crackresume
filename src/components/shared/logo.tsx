@@ -12,18 +12,9 @@ export function Logo() {
     >
       <rect width="32" height="32" rx="8" fill="hsl(var(--primary))" />
       <path
-        d="M22 9C19.9877 9 18.0532 9.79017 16.636 11.2073C15.2188 12.6245 14.4286 14.559 14.4286 16.5714C14.4286 18.5838 15.2188 20.5183 16.636 21.9355C18.0532 23.3527 19.9877 24.1429 22 24.1429"
-        stroke="hsl(var(--primary-foreground))"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 16.5714L14.4286 21L22 9"
-        stroke="hsl(var(--primary-foreground))"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M19.7852 6.66699L11.5352 22.667C11.1413 23.4184 11.453 24.3601 12.2044 24.754C12.9558 25.1478 13.8975 24.8361 14.2914 24.0847L15.3581 22.0402C15.545 21.6811 15.9599 21.4939 16.3813 21.5762L16.3813 21.5762C16.8027 21.6585 17.1517 21.9881 17.234 22.4095L17.5133 23.8447C17.7214 24.8197 18.6653 25.467 19.6403 25.2589C20.6153 25.0508 21.2626 24.1069 21.0545 23.1319L19.7852 6.66699Z"
+        fill="hsl(var(--primary-foreground))"
+        transform="rotate(15, 16, 16) translate(-1, -1)"
       />
     </svg>
   );
