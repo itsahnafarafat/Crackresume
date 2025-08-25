@@ -69,6 +69,7 @@ export function AtsResumeGenerator() {
 
 
     startTransition(async () => {
+      setResult(null);
       const isRegeneration = !!result;
       
       try {
@@ -142,7 +143,7 @@ export function AtsResumeGenerator() {
 
       } catch (error: any) {
         console.error('Generation Error:', error);
-        if (error.message && error.message.includes('503')) {
+        if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
              toast({
                 title: 'AI Service Unavailable',
                 description: 'The AI model is currently overloaded. Please try again in a few moments.',
@@ -174,54 +175,51 @@ export function AtsResumeGenerator() {
     
     const docChildren: Paragraph[] = [];
 
-    // --- Header ---
     if (personalDetails.name) {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 48 })], // 24pt
+            children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 32 })], // 16pt
             alignment: AlignmentType.CENTER,
-            spacing: { after: 0, line: 276 },
+            spacing: { after: 0 },
         }));
     }
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
     if (contactInfo) {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
+            children: [new TextRun({ text: contactInfo, size: 20 })], // 10pt
             alignment: AlignmentType.CENTER,
-            spacing: { after: 300, line: 276 },
+            spacing: { after: 200, line: 240 },
         }));
     }
 
-    // --- Sections ---
     sections.forEach(section => {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 28 })], // 14pt
-            spacing: { after: 120, line: 276 },
+            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 22 })], // 11pt
+            spacing: { before: 100, after: 50 },
         }));
 
         section.content.forEach(item => {
-            const spacing: ISpacingProperties = { after: 0, before: 0, line: 276 };
             switch (item.type) {
                 case 'paragraph':
                     docChildren.push(new Paragraph({
                         children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                        spacing: { after: 100, line: 276 },
+                        spacing: { after: 100, line: 240 },
                     }));
                     break;
                 case 'subheading':
                      const [leftText, rightText] = item.text.split('||');
                     docChildren.push(new Paragraph({
                         children: [
-                            new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
-                            new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
+                            new TextRun({ text: leftText.trim(), bold: true, size: 21 }), // 10.5pt
+                            new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 21 })
                         ],
                         tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
-                         spacing: { after: 0, before: 50, line: 276 },
+                         spacing: { after: 0, before: 80, line: 240 },
                     }));
                     break;
                 case 'detail':
                     docChildren.push(new Paragraph({
                         children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
-                        spacing: { after: 100, before: 0, line: 276 },
+                        spacing: { after: 100, before: 0, line: 240 },
                     }));
                     break;
                 case 'bullet':
@@ -230,12 +228,11 @@ export function AtsResumeGenerator() {
                         bullet: { level: 0 },
                         style: "default",
                         indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
-                        spacing: { after: 80, line: 276 },
+                        spacing: { after: 60, line: 240 },
                     }));
                     break;
             }
         });
-         docChildren.push(new Paragraph({ spacing: { after: 200 } })); // Add space between sections
     });
 
     const doc = new Document({
@@ -243,10 +240,10 @@ export function AtsResumeGenerator() {
             properties: {
                 page: {
                     margin: {
-                        top: convertInchesToTwip(0.7),
-                        right: convertInchesToTwip(0.7),
-                        bottom: convertInchesToTwip(0.7),
-                        left: convertInchesToTwip(0.7),
+                        top: convertInchesToTwip(0.6),
+                        right: convertInchesToTwip(0.6),
+                        bottom: convertInchesToTwip(0.6),
+                        left: convertInchesToTwip(0.6),
                     },
                 },
             },
@@ -257,7 +254,7 @@ export function AtsResumeGenerator() {
                 document: {
                     run: { font: "Times New Roman", size: 21 }, // 10.5pt default
                     paragraph: {
-                        spacing: { line: 276, before: 0, after: 160 }, // 1.15 line spacing, 8pt after
+                        spacing: { line: 240, before: 0, after: 0 }, // 1.0 line spacing
                     }
                 },
             },
@@ -269,7 +266,7 @@ export function AtsResumeGenerator() {
                 quickFormat: true,
                 run: { font: "Times New Roman", size: 21 },
                 paragraph: {
-                    spacing: { line: 276, before: 0, after: 80 }
+                    spacing: { line: 240, before: 0, after: 60 }
                 }
             }]
         }
@@ -395,7 +392,7 @@ export function AtsResumeGenerator() {
                          <Button onClick={() => copyToClipboard(result.atsFriendlyResumeText)} className="w-full">
                             <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
                         </Button>
-                        <Button onClick={handleDownloadDocx} className="w-full" variant="outline">
+                        <Button onClick={handleDownloadDocx} className="w-full">
                             <Download className="mr-2 h-4 w-4" /> Download DOCX
                         </Button>
                     </div>
