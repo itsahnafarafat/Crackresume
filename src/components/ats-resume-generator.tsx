@@ -4,7 +4,7 @@
 import { generateAtsFriendlyResume } from '@/ai/flows/ats-resume-generator';
 import type { GenerateAtsFriendlyResumeOutput } from '@/ai/flows/ats-resume-generator';
 import { extractJobDetails } from '@/ai/flows/extract-job-details';
-import type { Job, StructuredResume } from '@/lib/types';
+import type { Job } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -17,8 +17,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
-import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, HorizontalRule, TabStopType, TabStopPosition, PageBreak, convertInchesToTwip, ISpacingProperties } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, TabStopType, TabStopPosition, ISpacingProperties, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -143,7 +142,7 @@ export function AtsResumeGenerator() {
 
       } catch (error: any) {
         console.error('Generation Error:', error);
-        if (error.message && error.message.includes('503 Service Unavailable')) {
+        if (error.message && error.message.includes('503')) {
              toast({
                 title: 'AI Service Unavailable',
                 description: 'The AI model is currently overloaded. Please try again in a few moments.',
@@ -168,103 +167,6 @@ export function AtsResumeGenerator() {
     });
   };
 
- const handleDownloadPdf = () => {
-    if (!result?.atsFriendlyResume) return;
-
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    doc.setFont('times', 'normal');
-
-    const margin = 40;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const usableWidth = pageWidth - margin * 2;
-    let y = margin;
-    const lineHeight = 1.15;
-    const smallFontSize = 9;
-    const normalFontSize = 10.5;
-    const subheadingFontSize = 11;
-    const headingFontSize = 14;
-    const nameFontSize = 24;
-
-    const addText = (text: string, x: number, currentY: number, options: { isBold?: boolean; size?: number; align?: 'center' | 'left' | 'right'; color?: string, isItalic?: boolean } = {}) => {
-        if (!text) return currentY;
-        doc.setFontSize(options.size || normalFontSize);
-        
-        let fontStyle = 'normal';
-        if (options.isBold && options.isItalic) fontStyle = 'bolditalic';
-        else if (options.isBold) fontStyle = 'bold';
-        else if (options.isItalic) fontStyle = 'italic';
-        
-        doc.setFont('times', fontStyle);
-        if (options.color) doc.setTextColor(options.color);
-
-        const textWidth = doc.getStringUnitWidth(text) * (options.size || normalFontSize) / doc.internal.scaleFactor;
-        let textX = x;
-        if (options.align === 'center') textX = pageWidth / 2;
-        if (options.align === 'right') textX = pageWidth - margin;
-
-        doc.text(text, textX, currentY, { align: options.align || 'left', baseline: 'top' });
-        doc.setTextColor('#000000');
-        doc.setFont('times', 'normal'); // Reset to normal
-        return currentY;
-    };
-
-    const { personalDetails, sections } = result.atsFriendlyResume;
-
-    // --- Header ---
-    if (personalDetails.name) {
-        addText(personalDetails.name.toUpperCase(), pageWidth / 2, y, { size: nameFontSize, isBold: true, align: 'center' });
-        y += nameFontSize;
-    }
-    const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
-    if (contactInfo) {
-        addText(contactInfo, pageWidth / 2, y, { size: smallFontSize, align: 'center' });
-        y += smallFontSize * lineHeight + 15;
-    }
-
-    // --- Sections ---
-    sections.forEach(section => {
-        if (y > doc.internal.pageSize.getHeight() - margin * 2) return;
-
-        addText(section.heading.toUpperCase(), margin, y, { size: headingFontSize, isBold: true });
-        y += headingFontSize * lineHeight + 4; // Add gap after heading
-
-        section.content.forEach(item => {
-            if (y > doc.internal.pageSize.getHeight() - margin) return;
-
-            switch (item.type) {
-                case 'paragraph':
-                    const paraLines = doc.splitTextToSize(item.text, usableWidth);
-                    doc.setFontSize(normalFontSize);
-                    doc.text(paraLines, margin, y);
-                    y += paraLines.length * normalFontSize * lineHeight;
-                    y += 5;
-                    break;
-                case 'subheading':
-                    const [leftText, rightText] = item.text.split('||');
-                    addText(leftText.trim(), margin, y, { size: subheadingFontSize, isBold: true });
-                    if(rightText) addText(rightText.trim(), 0, y, { size: subheadingFontSize, isBold: true, align: 'right' });
-                    y += subheadingFontSize * lineHeight;
-                    break;
-                case 'detail':
-                    addText(item.text, margin, y, { size: normalFontSize, isItalic: true});
-                    y += normalFontSize * lineHeight + 5; // Add a bit more space after detail line
-                    break;
-                case 'bullet':
-                    const bulletLines = doc.splitTextToSize(item.text, usableWidth - 20);
-                    addText('•', margin + 5, y, { size: normalFontSize });
-                    doc.setFontSize(normalFontSize);
-                    doc.text(bulletLines, margin + 20, y);
-                    y += bulletLines.length * normalFontSize * lineHeight;
-                    y += 4; // Space between bullets
-                    break;
-            }
-        });
-        y += 15; // Space between sections
-    });
-
-    doc.save('Crackresume-Optimized-Resume.pdf');
-  };
-  
   const handleDownloadDocx = async () => {
     if (!result?.atsFriendlyResume) return;
 
@@ -297,7 +199,7 @@ export function AtsResumeGenerator() {
         }));
 
         section.content.forEach(item => {
-             const spacing: ISpacingProperties = { after: 0, before: 0, line: 276 };
+            const spacing: ISpacingProperties = { after: 0, before: 0, line: 276 };
             switch (item.type) {
                 case 'paragraph':
                     docChildren.push(new Paragraph({
@@ -306,14 +208,14 @@ export function AtsResumeGenerator() {
                     }));
                     break;
                 case 'subheading':
-                    const [leftText, rightText] = item.text.split('||');
+                     const [leftText, rightText] = item.text.split('||');
                     docChildren.push(new Paragraph({
                         children: [
                             new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
                             new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
                         ],
                         tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
-                        spacing: { after: 0, line: 276 },
+                         spacing: { after: 0, before: 50, line: 276 },
                     }));
                     break;
                 case 'detail':
@@ -489,12 +391,9 @@ export function AtsResumeGenerator() {
 
             {result && !isPending && (
                 <div className="space-y-6 animate-in fade-in-50">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                          <Button onClick={() => copyToClipboard(result.atsFriendlyResumeText)} className="w-full">
                             <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
-                        </Button>
-                        <Button onClick={handleDownloadPdf} className="w-full" variant="outline">
-                            <Download className="mr-2 h-4 w-4" /> Download PDF
                         </Button>
                         <Button onClick={handleDownloadDocx} className="w-full" variant="outline">
                             <Download className="mr-2 h-4 w-4" /> Download DOCX
