@@ -18,7 +18,7 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from '
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Bullet, PageBreak, PageNumber, Footer, Header, HorizontalRule, PageSize, VerticalPositionAlign, HeightRule, VerticalAlign, convertInchesToTwip, Tab, TabStopPosition, TabStopType, WidthType, Table, TableRow, TableCell, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, HorizontalRule, TabStopType, TabStopPosition, PageBreak, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -202,11 +202,11 @@ export function AtsResumeGenerator() {
     };
 
     const addLine = (currentY: number) => {
-        const newY = currentY + 2;
+        const newY = currentY;
         doc.setDrawColor(0, 0, 0);
         doc.setLineWidth(0.75);
         doc.line(margin, newY, pageWidth - margin, newY);
-        return newY + 12; // Increased gap after line
+        return newY + 12; 
     }
 
     const { personalDetails, sections } = result.atsFriendlyResume;
@@ -272,102 +272,115 @@ export function AtsResumeGenerator() {
   };
   
   const handleDownloadDocx = async () => {
-      if (!result?.atsFriendlyResume) return;
-  
-      const { personalDetails, sections } = result.atsFriendlyResume;
-      const children: Paragraph[] = [];
-  
-      // --- Header ---
-      if (personalDetails.name) {
-          children.push(new Paragraph({
-              children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 48 })], // 24pt
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 0 },
-          }));
-      }
-      const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
-      if (contactInfo) {
-          children.push(new Paragraph({
-              children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
-              alignment: AlignmentType.CENTER,
-              spacing: { after: 300 },
-          }));
-      }
-  
-      // --- Sections ---
-      sections.forEach(section => {
-          children.push(new Paragraph({
-              children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
-              spacing: { before: 200, after: 120 }, // Increased gap after line
-              border: { bottom: { color: "auto", space: 6, value: "single", size: 6 } },
-          }));
-  
-          section.content.forEach(item => {
-              switch (item.type) {
-                  case 'paragraph':
-                      children.push(new Paragraph({
-                          children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                          spacing: { after: 100 },
-                      }));
-                      break;
-                  case 'subheading':
-                      const [leftText, rightText] = item.text.split('||');
-                      children.push(new Paragraph({
-                          children: [
-                              new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
-                              new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
-                          ],
-                          tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }]
-                      }));
-                      break;
-                  case 'detail':
-                      children.push(new Paragraph({
-                          children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
-                          spacing: { after: 100 },
-                      }));
-                      break;
-                  case 'bullet':
-                      children.push(new Paragraph({
-                          children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                          bullet: { level: 0 },
-                          indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
-                          spacing: { after: 40 },
-                      }));
-                      break;
-              }
-          });
-      });
-  
-      const doc = new Document({
-          sections: [{
-              properties: {
-                  page: {
-                      margin: {
-                          top: convertInchesToTwip(0.7),
-                          right: convertInchesToTwip(0.7),
-                          bottom: convertInchesToTwip(0.7),
-                          left: convertInchesToTwip(0.7),
-                      },
-                  },
-              },
-              children: children,
-          }],
-          styles: {
-              default: {
-                  document: {
-                      run: { font: "Times New Roman", size: 21 }, // 10.5pt default
-                      paragraph: {
-                          spacing: { line: 276, before: 0, after: 160 }, // 1.15 line spacing, 8pt after
-                      }
-                  },
-              },
-          }
-      });
-  
-      Packer.toBlob(doc).then(blob => {
-          saveAs(blob, 'Crackresume-Optimized-Resume.docx');
-      });
-  };
+    if (!result?.atsFriendlyResume) return;
+
+    const { personalDetails, sections } = result.atsFriendlyResume;
+
+    const docChildren: Paragraph[] = [];
+
+    // --- Header ---
+    if (personalDetails.name) {
+        docChildren.push(new Paragraph({
+            children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 48 })], // 24pt
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 0 },
+        }));
+    }
+    const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
+    if (contactInfo) {
+        docChildren.push(new Paragraph({
+            children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 300 },
+        }));
+    }
+
+    // --- Sections ---
+    sections.forEach(section => {
+        docChildren.push(new Paragraph({
+            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
+            spacing: { after: 80 },
+            border: { bottom: { color: "auto", space: 6, value: "single", size: 6 } },
+        }));
+
+        section.content.forEach(item => {
+            switch (item.type) {
+                case 'paragraph':
+                    docChildren.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
+                        spacing: { after: 100 },
+                    }));
+                    break;
+                case 'subheading':
+                    const [leftText, rightText] = item.text.split('||');
+                    docChildren.push(new Paragraph({
+                        children: [
+                            new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
+                            new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
+                        ],
+                        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }]
+                    }));
+                    break;
+                case 'detail':
+                    docChildren.push(new Paragraph({
+                        children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
+                        spacing: { after: 100 },
+                    }));
+                    break;
+                case 'bullet':
+                    docChildren.push(new Paragraph({
+                        text: item.text,
+                        bullet: { level: 0 },
+                        style: "default",
+                        indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
+                        spacing: { after: 40 },
+                    }));
+                    break;
+            }
+        });
+    });
+
+    const doc = new Document({
+        sections: [{
+            properties: {
+                page: {
+                    margin: {
+                        top: convertInchesToTwip(0.7),
+                        right: convertInchesToTwip(0.7),
+                        bottom: convertInchesToTwip(0.7),
+                        left: convertInchesToTwip(0.7),
+                    },
+                },
+            },
+            children: docChildren,
+        }],
+        styles: {
+            default: {
+                document: {
+                    run: { font: "Times New Roman", size: 21 }, // 10.5pt default
+                    paragraph: {
+                        spacing: { line: 276, before: 0, after: 160 }, // 1.15 line spacing, 8pt after
+                    }
+                },
+            },
+            paragraphStyles: [{
+                id: "default",
+                name: "Default",
+                basedOn: "Normal",
+                next: "Normal",
+                quickFormat: true,
+                run: { font: "Times New Roman", size: 21 },
+                paragraph: {
+                    spacing: { line: 276, before: 0, after: 80 }
+                }
+            }]
+        }
+    });
+
+    Packer.toBlob(doc).then(blob => {
+        saveAs(blob, 'Crackresume-Optimized-Resume.docx');
+    });
+};
   
   const getScoreColor = (score: number) => {
     if (score >= 85) return 'bg-green-500';
