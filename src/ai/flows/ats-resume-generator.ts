@@ -59,8 +59,8 @@ The output MUST be a structured JSON object adhering to the provided schema.
 1.  **Extract and Structure:**
     *   Begin by extracting the candidate's personal details (Name, Email, Phone, LinkedIn).
     *   Structure the resume into standard, ATS-friendly sections: "Professional Summary", "Work Experience", "Education", "Skills".
-    *   For the 'Work Experience' and 'Education' sections, each entry should have a 'subheading' (Job Title/Degree) and a 'detail' (Company, Location / University, Location). For the subheading, separate the title and the date range with '||' for later parsing (e.g., "Senior Software Engineer || May 2020 - Present").
-    *   For the 'Skills' section, group related skills into a single 'bullet' element, separated by commas (e.g., "Languages: JavaScript, Python, Java").
+    *   For 'Work Experience' and 'Education', each entry MUST have a 'subheading' (Job Title/Degree) and a corresponding 'detail' (Company, Location / University, Location). The date range for each entry MUST be included in the 'subheading' and separated by '||' for later parsing (e.g., "Senior Software Engineer || May 2020 - Present").
+    *   For the 'Skills' section, group related skills into a single 'bullet' element, separated by commas, and add a label (e.g., "Languages: JavaScript, Python, Java").
 
 2.  **Content Optimization (This is crucial):**
     *   **Keyword Integration:** Seamlessly integrate keywords, skills, and qualifications from the job description. Don't just list them; weave them into the summary and experience bullet points naturally.

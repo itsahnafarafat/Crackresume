@@ -18,7 +18,7 @@ import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from '
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, HorizontalRule, TabStopType, TabStopPosition, PageBreak, convertInchesToTwip } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, HorizontalRule, TabStopType, TabStopPosition, PageBreak, convertInchesToTwip, ISpacingProperties } from 'docx';
 import { saveAs } from 'file-saver';
 import {
   AlertDialog,
@@ -182,13 +182,19 @@ export function AtsResumeGenerator() {
     const smallFontSize = 9;
     const normalFontSize = 10.5;
     const subheadingFontSize = 11;
-    const headingFontSize = 12;
+    const headingFontSize = 14;
     const nameFontSize = 24;
 
-    const addText = (text: string, x: number, currentY: number, options: { isBold?: boolean; size?: number; align?: 'center' | 'left' | 'right'; color?: string } = {}) => {
+    const addText = (text: string, x: number, currentY: number, options: { isBold?: boolean; size?: number; align?: 'center' | 'left' | 'right'; color?: string, isItalic?: boolean } = {}) => {
         if (!text) return currentY;
         doc.setFontSize(options.size || normalFontSize);
-        doc.setFont('times', options.isBold ? 'bold' : 'normal');
+        
+        let fontStyle = 'normal';
+        if (options.isBold && options.isItalic) fontStyle = 'bolditalic';
+        else if (options.isBold) fontStyle = 'bold';
+        else if (options.isItalic) fontStyle = 'italic';
+        
+        doc.setFont('times', fontStyle);
         if (options.color) doc.setTextColor(options.color);
 
         const textWidth = doc.getStringUnitWidth(text) * (options.size || normalFontSize) / doc.internal.scaleFactor;
@@ -198,23 +204,16 @@ export function AtsResumeGenerator() {
 
         doc.text(text, textX, currentY, { align: options.align || 'left', baseline: 'top' });
         doc.setTextColor('#000000');
+        doc.setFont('times', 'normal'); // Reset to normal
         return currentY;
     };
-
-    const addLine = (currentY: number) => {
-        const newY = currentY;
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.75);
-        doc.line(margin, newY, pageWidth - margin, newY);
-        return newY + 12; 
-    }
 
     const { personalDetails, sections } = result.atsFriendlyResume;
 
     // --- Header ---
     if (personalDetails.name) {
         addText(personalDetails.name.toUpperCase(), pageWidth / 2, y, { size: nameFontSize, isBold: true, align: 'center' });
-        y += nameFontSize * 0.9;
+        y += nameFontSize;
     }
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
     if (contactInfo) {
@@ -227,8 +226,7 @@ export function AtsResumeGenerator() {
         if (y > doc.internal.pageSize.getHeight() - margin * 2) return;
 
         addText(section.heading.toUpperCase(), margin, y, { size: headingFontSize, isBold: true });
-        y += headingFontSize * lineHeight - 4;
-        y = addLine(y);
+        y += headingFontSize * lineHeight + 4; // Add gap after heading
 
         section.content.forEach(item => {
             if (y > doc.internal.pageSize.getHeight() - margin) return;
@@ -248,12 +246,8 @@ export function AtsResumeGenerator() {
                     y += subheadingFontSize * lineHeight;
                     break;
                 case 'detail':
-                    doc.setFontSize(smallFontSize);
-                    doc.setFont('times', 'italic');
-                    doc.text(item.text, margin, y);
-                    doc.setFont('times', 'normal');
-                    y += smallFontSize * lineHeight;
-                    y += 5;
+                    addText(item.text, margin, y, { size: normalFontSize, isItalic: true});
+                    y += normalFontSize * lineHeight + 5; // Add a bit more space after detail line
                     break;
                 case 'bullet':
                     const bulletLines = doc.splitTextToSize(item.text, usableWidth - 20);
@@ -261,11 +255,11 @@ export function AtsResumeGenerator() {
                     doc.setFontSize(normalFontSize);
                     doc.text(bulletLines, margin + 20, y);
                     y += bulletLines.length * normalFontSize * lineHeight;
-                    y += 2;
+                    y += 4; // Space between bullets
                     break;
             }
         });
-        y += 10;
+        y += 15; // Space between sections
     });
 
     doc.save('Crackresume-Optimized-Resume.pdf');
@@ -275,7 +269,7 @@ export function AtsResumeGenerator() {
     if (!result?.atsFriendlyResume) return;
 
     const { personalDetails, sections } = result.atsFriendlyResume;
-
+    
     const docChildren: Paragraph[] = [];
 
     // --- Header ---
@@ -283,7 +277,7 @@ export function AtsResumeGenerator() {
         docChildren.push(new Paragraph({
             children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 48 })], // 24pt
             alignment: AlignmentType.CENTER,
-            spacing: { after: 0 },
+            spacing: { after: 0, line: 276 },
         }));
     }
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
@@ -291,24 +285,24 @@ export function AtsResumeGenerator() {
         docChildren.push(new Paragraph({
             children: [new TextRun({ text: contactInfo, size: 18 })], // 9pt
             alignment: AlignmentType.CENTER,
-            spacing: { after: 300 },
+            spacing: { after: 300, line: 276 },
         }));
     }
 
     // --- Sections ---
     sections.forEach(section => {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 24 })], // 12pt
-            spacing: { after: 80 },
-            border: { bottom: { color: "auto", space: 6, value: "single", size: 6 } },
+            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 28 })], // 14pt
+            spacing: { after: 120, line: 276 },
         }));
 
         section.content.forEach(item => {
+             const spacing: ISpacingProperties = { after: 0, before: 0, line: 276 };
             switch (item.type) {
                 case 'paragraph':
                     docChildren.push(new Paragraph({
                         children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
-                        spacing: { after: 100 },
+                        spacing: { after: 100, line: 276 },
                     }));
                     break;
                 case 'subheading':
@@ -318,13 +312,14 @@ export function AtsResumeGenerator() {
                             new TextRun({ text: leftText.trim(), bold: true, size: 22 }), // 11pt
                             new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 22 })
                         ],
-                        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }]
+                        tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+                        spacing: { after: 0, line: 276 },
                     }));
                     break;
                 case 'detail':
                     docChildren.push(new Paragraph({
                         children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
-                        spacing: { after: 100 },
+                        spacing: { after: 100, before: 0, line: 276 },
                     }));
                     break;
                 case 'bullet':
@@ -333,11 +328,12 @@ export function AtsResumeGenerator() {
                         bullet: { level: 0 },
                         style: "default",
                         indent: { left: convertInchesToTwip(0.25), hanging: convertInchesToTwip(0.25) },
-                        spacing: { after: 40 },
+                        spacing: { after: 80, line: 276 },
                     }));
                     break;
             }
         });
+         docChildren.push(new Paragraph({ spacing: { after: 200 } })); // Add space between sections
     });
 
     const doc = new Document({
