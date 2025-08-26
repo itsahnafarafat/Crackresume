@@ -101,31 +101,33 @@ export function AtsResumeGenerator() {
                 await updateDoc(userRef, { generationsToday: 1, lastGenerationDate: today });
             }
     
+            const newJob: Omit<Job, 'id'> = {
+              userId: user.uid,
+              companyName: jobDetails.companyName || '',
+              jobTitle: jobDetails.jobTitle || '',
+              location: jobDetails.location || '',
+              status: 'Saved',
+              applicationDate: new Date().toISOString(),
+              notes: 'Generated an ATS-friendly resume for this application.',
+              jobDescription: jobDescription,
+            };
+            
+            await addDoc(collection(firestore, 'jobs'), newJob);
+            
+            window.dispatchEvent(new Event('jobAdded'));
+            
             if (jobDetails.companyName && jobDetails.jobTitle) {
-              const newJob: Omit<Job, 'id'> = {
-                userId: user.uid,
-                ...jobDetails,
-                status: 'Saved',
-                applicationDate: new Date().toISOString(),
-                notes: 'Generated an ATS-friendly resume for this application.',
-                jobDescription: jobDescription,
-              };
-              
-              await addDoc(collection(firestore, 'jobs'), newJob);
-              
-              window.dispatchEvent(new Event('jobAdded'));
-              
-              toast({
-                title: 'Job Tracked!',
-                description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
-              });
-            } else {
                  toast({
-                    title: 'Could Not Track Job',
-                    description: 'The AI could not extract job details to track, but the resume was generated.',
-                    variant: 'destructive',
+                    title: 'Job Tracked!',
+                    description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
+                });
+            } else {
+                toast({
+                    title: 'Job Tracked!',
+                    description: 'We saved the job, but please add the company name and title manually.',
                 });
             }
+
         } else {
             // Unauthenticated user flow
             const atsResult = await generateAtsFriendlyResume(payload);
