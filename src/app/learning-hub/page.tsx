@@ -1,10 +1,15 @@
 
+
 import { BlogPostCard } from "@/components/blog-post-card";
 import { Header } from "@/components/shared/header";
 import { firestore } from "@/lib/firebase-admin";
 import type { BlogPost } from "@/lib/types";
 
 async function getBlogPosts() {
+    if (!firestore) {
+      console.error("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
+      return [];
+    }
     const postsSnapshot = await firestore.collection('posts').orderBy('date', 'desc').get();
     const posts = postsSnapshot.docs.map(doc => {
         const data = doc.data() as BlogPost;
@@ -39,6 +44,11 @@ export default async function LearningHubPage() {
               <BlogPostCard key={post.slug} post={post} />
             ))}
           </div>
+           {blogPosts.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+                <p>No blog posts found. Check back soon!</p>
+            </div>
+          )}
         </div>
       </main>
       <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t mt-auto">

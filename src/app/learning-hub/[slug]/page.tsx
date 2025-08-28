@@ -1,4 +1,5 @@
 
+
 import { Header } from "@/components/shared/header";
 import { firestore } from "@/lib/firebase-admin";
 import type { BlogPost } from "@/lib/types";
@@ -17,6 +18,10 @@ interface BlogPostPageProps {
 }
 
 async function getPost(slug: string) {
+    if (!firestore) {
+      console.error("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
+      return null;
+    }
     const postsRef = firestore.collection('posts');
     const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
     
@@ -39,6 +44,9 @@ async function getPost(slug: string) {
 
 // Generate static pages for each blog post
 export async function generateStaticParams() {
+  if (!firestore) {
+    return [];
+  }
   const postsSnapshot = await firestore.collection('posts').get();
   return postsSnapshot.docs.map((doc) => ({
     slug: doc.data().slug,
