@@ -26,6 +26,7 @@ export interface UserData extends FirebaseUser {
     updatePaymentMethodUrl?: string;
     generationsToday?: number;
     lastGenerationDate?: string;
+    isAdmin?: boolean;
 }
 
 export interface BlogPost {
@@ -33,7 +34,7 @@ export interface BlogPost {
   title: string;
   excerpt: string;
   author: string;
-  date: string;
+  date: string | Timestamp;
   imageUrl: string;
   content: string;
 }

@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink, Menu, BookOpen } from "lucide-react";
+import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink, Menu, BookOpen, UserCog } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -81,13 +81,21 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {user.isAdmin && (
+                   <DropdownMenuItem asChild>
+                      <Link href="/admin">
+                        <UserCog className="mr-2 h-4 w-4" />
+                        <span>Admin</span>
+                      </Link>
+                  </DropdownMenuItem>
+                )}
                 {user.subscriptionStatus === 'active' && (
                   <DropdownMenuItem onSelect={handleManageSubscription}>
                     <ExternalLink className="mr-2 h-4 w-4" />
                     <span>Manage Subscription</span>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>

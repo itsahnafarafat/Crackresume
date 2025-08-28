@@ -38,7 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     ...userData,
                 });
             } else {
-                 setUser(firebaseUser);
+                 // This case might happen if the user document hasn't been created yet.
+                 setUser(firebaseUser as UserData);
             }
             setLoading(false);
         });
@@ -76,7 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
           subscriptionStatus: 'free',
           generationsToday: 0,
-          lastGenerationDate: new Date().toISOString().split('T')[0] // YYYY-MM-DD
+          lastGenerationDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+          isAdmin: false, // Default to not admin
       });
       router.push('/');
       toast({ title: "Sign Up Successful", description: "Welcome to Crackresume!"});

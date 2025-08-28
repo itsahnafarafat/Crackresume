@@ -1,9 +1,28 @@
 
 import { BlogPostCard } from "@/components/blog-post-card";
 import { Header } from "@/components/shared/header";
-import { blogPosts } from "@/lib/blog-posts";
+import { firestore } from "@/lib/firebase-admin";
+import type { BlogPost } from "@/lib/types";
 
-export default function LearningHubPage() {
+async function getBlogPosts() {
+    const postsSnapshot = await firestore.collection('posts').orderBy('date', 'desc').get();
+    const posts = postsSnapshot.docs.map(doc => {
+        const data = doc.data() as BlogPost;
+        // Ensure date is a plain string for serialization
+        if (data.date && typeof (data.date as any).toDate === 'function') {
+            data.date = (data.date as any).toDate().toISOString().split('T')[0];
+        }
+        return {
+            ...data,
+            slug: data.slug,
+        };
+    });
+    return posts;
+}
+
+export default async function LearningHubPage() {
+  const blogPosts = await getBlogPosts();
+  
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
       <Header />

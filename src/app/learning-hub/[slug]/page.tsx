@@ -1,6 +1,8 @@
 
 import { Header } from "@/components/shared/header";
-import { blogPosts } from "@/lib/blog-posts";
+import { firestore } from "@/lib/firebase-admin";
+import type { BlogPost } from "@/lib/types";
+import { format } from 'date-fns';
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -14,15 +16,37 @@ interface BlogPostPageProps {
   };
 }
 
+async function getPost(slug: string) {
+    const postsRef = firestore.collection('posts');
+    const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
+    
+    if (snapshot.empty) {
+        return null;
+    }
+
+    const doc = snapshot.docs[0];
+    const data = doc.data() as BlogPost;
+    
+     // Ensure date is a plain string
+    if (data.date && typeof (data.date as any).toDate === 'function') {
+        data.date = format((data.date as any).toDate(), 'PPP');
+    } else {
+        data.date = format(new Date(data.date as string), 'PPP');
+    }
+    
+    return data;
+}
+
 // Generate static pages for each blog post
 export async function generateStaticParams() {
-  return blogPosts.map((post) => ({
-    slug: post.slug,
+  const postsSnapshot = await firestore.collection('posts').get();
+  return postsSnapshot.docs.map((doc) => ({
+    slug: doc.data().slug,
   }));
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = blogPosts.find((p) => p.slug === params.slug);
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const post = await getPost(params.slug);
 
   if (!post) {
     notFound();
@@ -51,7 +75,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
                  <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <time dateTime={post.date}>{post.date}</time>
+                    <time dateTime={post.date as string}>{post.date as string}</time>
                 </div>
             </div>
 
