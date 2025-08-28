@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User } from "lucide-react";
+import { Calendar, User, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -17,10 +17,10 @@ interface BlogPostPageProps {
   };
 }
 
-async function getPost(slug: string) {
+async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured'> {
     if (!firestore) {
-      console.error("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
-      return null;
+      console.warn("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
+      return 'unconfigured';
     }
     const postsRef = firestore.collection('posts');
     const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
@@ -32,29 +32,58 @@ async function getPost(slug: string) {
     const doc = snapshot.docs[0];
     const data = doc.data() as BlogPost;
     
-     // Ensure date is a plain string
     if (data.date && typeof (data.date as any).toDate === 'function') {
         data.date = format((data.date as any).toDate(), 'PPP');
-    } else {
+    } else if (typeof data.date === 'string') {
         data.date = format(new Date(data.date as string), 'PPP');
     }
     
     return data;
 }
 
-// Generate static pages for each blog post
 export async function generateStaticParams() {
   if (!firestore) {
     return [];
   }
-  const postsSnapshot = await firestore.collection('posts').get();
-  return postsSnapshot.docs.map((doc) => ({
-    slug: doc.data().slug,
-  }));
+  try {
+    const postsSnapshot = await firestore.collection('posts').get();
+    return postsSnapshot.docs.map((doc) => ({
+      slug: doc.data().slug,
+    }));
+  } catch (error) {
+    console.warn("Could not generate static params for blog posts, Firestore might be unconfigured.");
+    return [];
+  }
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getPost(params.slug);
+
+  if (post === 'unconfigured') {
+    return (
+       <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">
+             <div className="container mx-auto py-12 px-4 md:px-6">
+                <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
+                    <h1 className="mt-4 text-2xl font-bold text-yellow-900">Blog Content Not Available</h1>
+                    <p className="mt-2 text-yellow-700">
+                        The blog is not currently configured. The site administrator needs to provide the `FIREBASE_SERVICE_ACCOUNT_KEY` to connect to the database.
+                    </p>
+                    <div className="mt-6">
+                         <Button asChild>
+                            <Link href="/">
+                                &larr; Back to Homepage
+                            </Link>
+                         </Button>
+                    </div>
+                </div>
+            </div>
+          </main>
+      </div>
+    );
+  }
 
   if (!post) {
     notFound();
