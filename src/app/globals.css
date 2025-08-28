@@ -70,3 +70,22 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.prose h2 {
+  @apply text-3xl font-bold mt-8 mb-4;
+}
+.prose p {
+  @apply leading-relaxed mb-5;
+}
+.prose .lead {
+    @apply text-xl text-muted-foreground;
+}
+.prose ul, .prose ol {
+  @apply ml-6 mb-5;
+}
+.prose li {
+  @apply mb-2;
+}
+.prose blockquote {
+  @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
+}
