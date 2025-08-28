@@ -28,6 +28,16 @@ export interface UserData extends FirebaseUser {
     lastGenerationDate?: string;
 }
 
+export interface BlogPost {
+  slug: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  date: string;
+  imageUrl: string;
+  content: string;
+}
+
 
 export const loginFormSchema = z.object({
   email: z.string().email({

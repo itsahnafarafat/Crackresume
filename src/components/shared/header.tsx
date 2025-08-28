@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink, Menu } from "lucide-react";
+import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink, Menu, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -25,6 +25,13 @@ export function Header() {
 
   const navLinks = (
     <>
+        <Link
+            href="/learning-hub"
+            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+        >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Learning Hub
+        </Link>
         <Link
             href="/pricing"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
