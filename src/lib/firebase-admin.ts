@@ -1,5 +1,6 @@
 
 import * as admin from 'firebase-admin';
+import 'dotenv/config';
 
 // Check if the service account key is available
 const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
@@ -20,4 +21,4 @@ if (!admin.apps.length && serviceAccountKey) {
 }
 
 // Export a firestore instance. It will only be functional if initializeApp was successful.
-export const firestore = admin.apps.length > 0 ? admin.firestore() : null as unknown as admin.firestore.Firestore;
+export const firestore = admin.apps.length > 0 ? admin.firestore() : null;

@@ -17,28 +17,37 @@ interface BlogPostPageProps {
   };
 }
 
-async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured'> {
+async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured' | 'error'> {
     if (!firestore) {
       console.warn("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
       return 'unconfigured';
     }
-    const postsRef = firestore.collection('posts');
-    const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
-    
-    if (snapshot.empty) {
-        return null;
-    }
+    try {
+      const postsRef = firestore.collection('posts');
+      const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
+      
+      if (snapshot.empty) {
+          return null;
+      }
 
-    const doc = snapshot.docs[0];
-    const data = doc.data() as BlogPost;
-    
-    if (data.date && typeof (data.date as any).toDate === 'function') {
-        data.date = format((data.date as any).toDate(), 'PPP');
-    } else if (typeof data.date === 'string') {
-        data.date = format(new Date(data.date as string), 'PPP');
+      const doc = snapshot.docs[0];
+      const data = doc.data() as BlogPost;
+      
+      if (data.date && typeof (data.date as any).toDate === 'function') {
+          data.date = format((data.date as any).toDate(), 'PPP');
+      } else if (typeof data.date === 'string') {
+          try {
+            data.date = format(new Date(data.date as string), 'PPP');
+          } catch(e) {
+            // keep original string if it's not a valid date
+          }
+      }
+      
+      return data;
+    } catch (e) {
+      console.error(`Error fetching post with slug "${slug}":`, e);
+      return 'error';
     }
-    
-    return data;
 }
 
 export async function generateStaticParams() {
@@ -51,7 +60,7 @@ export async function generateStaticParams() {
       slug: doc.data().slug,
     }));
   } catch (error) {
-    console.warn("Could not generate static params for blog posts, Firestore might be unconfigured.");
+    console.warn("Could not generate static params for blog posts, Firestore might be unconfigured or have restrictive rules.");
     return [];
   }
 }
@@ -59,7 +68,11 @@ export async function generateStaticParams() {
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getPost(params.slug);
 
-  if (post === 'unconfigured') {
+  if (post === 'unconfigured' || post === 'error') {
+     const title = post === 'unconfigured' ? 'Blog Content Not Available' : 'Error Loading Post';
+     const description = post === 'unconfigured'
+        ? "The blog is not currently configured. The site administrator needs to provide the `FIREBASE_SERVICE_ACCOUNT_KEY` to connect to the database."
+        : "There was an error fetching this blog post. Please check the server logs or Firestore security rules.";
     return (
        <div className="flex min-h-screen flex-col">
           <Header />
@@ -67,10 +80,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
              <div className="container mx-auto py-12 px-4 md:px-6">
                 <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg">
                     <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
-                    <h1 className="mt-4 text-2xl font-bold text-yellow-900">Blog Content Not Available</h1>
-                    <p className="mt-2 text-yellow-700">
-                        The blog is not currently configured. The site administrator needs to provide the `FIREBASE_SERVICE_ACCOUNT_KEY` to connect to the database.
-                    </p>
+                    <h1 className="mt-4 text-2xl font-bold text-yellow-900">{title}</h1>
+                    <p className="mt-2 text-yellow-700">{description}</p>
                     <div className="mt-6">
                          <Button asChild>
                             <Link href="/">
