@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star } from 'lucide-react';
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
@@ -37,6 +37,13 @@ export function AtsResumeGenerator() {
   const { toast } = useToast();
   const { user } = useAuth();
   
+  useEffect(() => {
+    if (user?.resumeContent) {
+      setResumeContent(user.resumeContent);
+    }
+  }, [user]);
+
+
   const handleGenerate = () => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
       toast({
@@ -99,7 +106,6 @@ export function AtsResumeGenerator() {
             }
 
         } else {
-            // Unauthenticated user flow
             const atsResult = await generateAtsFriendlyResume(payload);
             setResult(atsResult);
             toast({
@@ -149,7 +155,7 @@ export function AtsResumeGenerator() {
 
     if (personalDetails.name) {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 32 })], // 16pt
+            children: [new TextRun({ text: personalDetails.name.toUpperCase(), bold: true, size: 32 })],
             alignment: AlignmentType.CENTER,
             spacing: { after: 0 },
         }));
@@ -157,7 +163,7 @@ export function AtsResumeGenerator() {
     const contactInfo = [personalDetails.email, personalDetails.phone, personalDetails.linkedin].filter(Boolean).join(' | ');
     if (contactInfo) {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: contactInfo, size: 20 })], // 10pt
+            children: [new TextRun({ text: contactInfo, size: 20 })],
             alignment: AlignmentType.CENTER,
             spacing: { after: 200, line: 240 },
         }));
@@ -165,15 +171,16 @@ export function AtsResumeGenerator() {
 
     sections.forEach(section => {
         docChildren.push(new Paragraph({
-            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 22 })], // 11pt
+            children: [new TextRun({ text: section.heading.toUpperCase(), bold: true, size: 22 })],
             spacing: { before: 100, after: 50 },
+            border: { bottom: { color: "auto", space: 1, value: "single", size: 6 } },
         }));
 
         section.content.forEach(item => {
             switch (item.type) {
                 case 'paragraph':
                     docChildren.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, size: 21 })], // 10.5pt
+                        children: [new TextRun({ text: item.text, size: 21 })],
                         spacing: { after: 100, line: 240 },
                     }));
                     break;
@@ -181,7 +188,7 @@ export function AtsResumeGenerator() {
                      const [leftText, rightText] = item.text.split('||');
                     docChildren.push(new Paragraph({
                         children: [
-                            new TextRun({ text: leftText.trim(), bold: true, size: 21 }), // 10.5pt
+                            new TextRun({ text: leftText.trim(), bold: true, size: 21 }),
                             new TextRun({ text: `\t${rightText ? rightText.trim() : ''}`, bold: true, size: 21 })
                         ],
                         tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
@@ -190,7 +197,7 @@ export function AtsResumeGenerator() {
                     break;
                 case 'detail':
                     docChildren.push(new Paragraph({
-                        children: [new TextRun({ text: item.text, italics: true, size: 21 })], // 10.5pt
+                        children: [new TextRun({ text: item.text, italics: true, size: 21 })],
                         spacing: { after: 100, before: 0, line: 240 },
                     }));
                     break;
@@ -212,10 +219,10 @@ export function AtsResumeGenerator() {
             properties: {
                 page: {
                     margin: {
-                        top: convertInchesToTwip(0.6),
-                        right: convertInchesToTwip(0.6),
-                        bottom: convertInchesToTwip(0.6),
-                        left: convertInchesToTwip(0.6),
+                        top: convertInchesToTwip(0.5),
+                        right: convertInchesToTwip(0.5),
+                        bottom: convertInchesToTwip(0.5),
+                        left: convertInchesToTwip(0.5),
                     },
                 },
             },
@@ -224,9 +231,9 @@ export function AtsResumeGenerator() {
         styles: {
             default: {
                 document: {
-                    run: { font: "Times New Roman", size: 21 }, // 10.5pt default
+                    run: { font: "Calibri", size: 21 },
                     paragraph: {
-                        spacing: { line: 240, before: 0, after: 0 }, // 1.0 line spacing
+                        spacing: { line: 240, before: 0, after: 0 },
                     }
                 },
             },
@@ -236,7 +243,7 @@ export function AtsResumeGenerator() {
                 basedOn: "Normal",
                 next: "Normal",
                 quickFormat: true,
-                run: { font: "Times New Roman", size: 21 },
+                run: { font: "Calibri", size: 21 },
                 paragraph: {
                     spacing: { line: 240, before: 0, after: 60 }
                 }
@@ -263,6 +270,9 @@ export function AtsResumeGenerator() {
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-6 h-6" /> Your Resume
             </CardTitle>
+             <CardDescription>
+                {user ? "Your saved resume is pre-filled below. You can also paste a different one." : "Paste your resume below to get started."}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -279,6 +289,9 @@ export function AtsResumeGenerator() {
             <CardTitle className="flex items-center gap-2">
               <Clipboard className="w-6 h-6" /> Job Description
             </CardTitle>
+             <CardDescription>
+                Paste the job description you are targeting.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -295,87 +308,77 @@ export function AtsResumeGenerator() {
        <div className="flex justify-center my-4">
           <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} size="lg">
               {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-              {result ? (user ? 'Regenerate & Track' : 'Regenerate Resume') : (user ? 'Generate & Track' : 'Generate Resume')}
+              {result ? 'Regenerate Resume' : 'Generate ATS-Friendly Resume'}
           </Button>
        </div>
 
-      <div className="space-y-6">
-        <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Wand2 className="w-6 h-6 text-primary" /> AI Generated Result
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-            {isPending && (
-                <div className="flex flex-col items-center justify-center h-96 space-y-4">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Analyzing, rewriting, and tracking...</p>
-                    <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
-                </div>
-            )}
-            {!isPending && !result && (
-                 <div className="flex flex-col items-center justify-center h-96 text-center">
-                    <FileText className="w-12 h-12 text-muted-foreground/50" />
-                    <p className="mt-4 text-muted-foreground">
-                        Your optimized resume will appear here once generated.
-                    </p>
-                </div>
-            )}
+      {result && !isPending && (
+        <div className="space-y-6">
+            <Card className="shadow-lg">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Wand2 className="w-6 h-6 text-primary" /> AI Generated Result
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-6 animate-in fade-in-50">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Button onClick={() => copyToClipboard(result.atsFriendlyResumeText)} className="w-full">
+                                <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
+                            </Button>
+                            <Button onClick={handleDownloadDocx} className="w-full">
+                                <Download className="mr-2 h-4 w-4" /> Download DOCX
+                            </Button>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="font-semibold">ATS Compatibility Score</h3>
+                            <Progress value={result.atsScore} indicatorClassName={getScoreColor(result.atsScore)} />
+                            <p className="text-sm text-right font-medium">{result.atsScore}% ({result.scoreAnalysis})</p>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <div className="space-y-4">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <Lightbulb className="w-5 h-5 text-yellow-400" /> Key Improvements
+                            </h3>
+                            <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                            {result.keyImprovements.map((item, index) => (
+                                <li key={index} className="flex items-start">
+                                    <CheckCircle className="w-4 h-4 mr-2 mt-1 text-green-500 flex-shrink-0" />
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                            </ul>
+                        </div>
+                        
+                        <Separator />
 
-            {result && !isPending && (
-                <div className="space-y-6 animate-in fade-in-50">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                         <Button onClick={() => copyToClipboard(result.atsFriendlyResumeText)} className="w-full">
-                            <Clipboard className="mr-2 h-4 w-4" /> Copy Resume
+                        <div>
+                            <h3 className="font-semibold mb-2">Optimized Resume</h3>
+                            <Textarea
+                                readOnly
+                                value={result.atsFriendlyResumeText}
+                                className="h-[400px] bg-muted/50 text-sm"
+                            />
+                        </div>
+                        <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
+                            {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
+                            Regenerate & Improve
                         </Button>
-                        <Button onClick={handleDownloadDocx} className="w-full">
-                            <Download className="mr-2 h-4 w-4" /> Download DOCX
-                        </Button>
                     </div>
-                    <div className="space-y-2">
-                        <h3 className="font-semibold">ATS Compatibility Score</h3>
-                        <Progress value={result.atsScore} indicatorClassName={getScoreColor(result.atsScore)} />
-                        <p className="text-sm text-right font-medium">{result.atsScore}% ({result.scoreAnalysis})</p>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="space-y-4">
-                        <h3 className="font-semibold flex items-center gap-2">
-                            <Lightbulb className="w-5 h-5 text-yellow-400" /> Key Improvements
-                        </h3>
-                        <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
-                        {result.keyImprovements.map((item, index) => (
-                            <li key={index} className="flex items-start">
-                                <CheckCircle className="w-4 h-4 mr-2 mt-1 text-green-500 flex-shrink-0" />
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                        </ul>
-                    </div>
-                    
-                    <Separator />
-
-                    <div>
-                        <h3 className="font-semibold mb-2">Optimized Resume</h3>
-                        <Textarea
-                            readOnly
-                            value={result.atsFriendlyResumeText}
-                            className="h-[400px] bg-muted/50 text-sm"
-                        />
-                    </div>
-                     <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
-                        {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                         {user ? 'Regenerate & Improve' : 'Regenerate & Improve'}
-                    </Button>
-                </div>
-            )}
-            </CardContent>
-        </Card>
-      </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+      
+       {isPending && (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <p className="text-muted-foreground">Analyzing, rewriting, and tracking...</p>
+                <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
+            </div>
+        )}
     </div>
   );
 }
-
-    

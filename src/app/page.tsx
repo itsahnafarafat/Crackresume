@@ -2,11 +2,35 @@
 'use client';
 
 import { AtsResumeGenerator } from "@/components/ats-resume-generator";
-import { JobTracker } from "@/components/job-tracker";
 import { Header } from "@/components/shared/header";
+import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to dashboard if logged in
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+  
+  if (loading || user) {
+    // Show a loading state or nothing while redirecting
+    return (
+        <div className="flex h-screen items-center justify-center">
+             <Loader2 className="h-12 w-12 animate-spin" />
+        </div>
+    );
+  }
+
+  // This content is for logged-out users
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
       <Header />
@@ -28,7 +52,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <JobTracker />
       </main>
       <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t mt-auto">
           <div className="flex gap-4">

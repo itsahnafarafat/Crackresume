@@ -16,17 +16,9 @@ export interface Job {
     jobDescription?: string;
 }
 
-export type SubscriptionStatus = 'free' | 'active' | 'cancelled' | 'expired' | 'unpaid' | 'on_trial' | 'past_due';
-
-
 export interface UserData extends FirebaseUser {
-    lemonSqueezyId?: string;
-    lemonSqueezySubscriptionId?: string;
-    subscriptionStatus?: SubscriptionStatus;
-    updatePaymentMethodUrl?: string;
-    generationsToday?: number;
-    lastGenerationDate?: string;
     isAdmin?: boolean;
+    resumeContent?: string;
 }
 
 export interface BlogPost {

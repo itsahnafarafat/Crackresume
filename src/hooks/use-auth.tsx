@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import type { LoginFormData, SignUpFormData, UserData } from '@/lib/types';
 import { useToast } from './use-toast';
@@ -15,6 +15,7 @@ interface AuthContextType {
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignUpFormData) => Promise<void>;
   logout: () => Promise<void>;
+  updateUserResume: (resumeContent: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,7 +39,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     ...userData,
                 });
             } else {
-                 // This case might happen if the user document hasn't been created yet.
                  setUser(firebaseUser as UserData);
             }
             setLoading(false);
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async ({ email, password }: LoginFormData) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/');
+      router.push('/dashboard');
        toast({ title: "Login Successful", description: "Welcome back!"});
     } catch (error: any) {
       console.error("Login error:", error);
@@ -75,12 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: newUser.email,
           displayName: name,
           createdAt: new Date().toISOString(),
-          subscriptionStatus: 'free',
-          generationsToday: 0,
-          lastGenerationDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-          isAdmin: false, // Default to not admin
+          isAdmin: false,
+          resumeContent: '',
       });
-      router.push('/');
+      router.push('/dashboard');
       toast({ title: "Sign Up Successful", description: "Welcome to Crackresume!"});
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -92,13 +90,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signOut(auth);
       router.push('/login');
-    } catch (error: any) {
+    } catch (error: any)
+{
       console.error("Logout error:", error);
       toast({ title: "Logout Failed", description: error.message, variant: 'destructive' });
     }
   };
+  
+  const updateUserResume = async (resumeContent: string) => {
+    if (!user) {
+        toast({ title: "Not Authenticated", description: "You must be logged in to update your resume.", variant: "destructive" });
+        return;
+    }
+    const userDocRef = doc(firestore, 'users', user.uid);
+    try {
+        await updateDoc(userDocRef, { resumeContent });
+        toast({ title: "Success", description: "Your resume has been saved." });
+    } catch (error) {
+        console.error("Error updating resume:", error);
+        toast({ title: "Error", description: "Could not save your resume.", variant: "destructive"});
+    }
+  };
 
-  const value = { user, loading, login, signup, logout };
+  const value = { user, loading, login, signup, logout, updateUserResume };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

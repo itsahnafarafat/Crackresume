@@ -70,13 +70,20 @@ export function JobTracker() {
   }, [user, toast]);
 
   useEffect(() => {
-    loadJobs();
+    if (user) {
+        loadJobs();
+    } else {
+        setLoading(false);
+    }
     
-    const handleJobAdded = () => loadJobs();
+    const handleJobAdded = () => {
+        if(user) loadJobs();
+    };
+
     window.addEventListener('jobAdded', handleJobAdded);
     return () => window.removeEventListener('jobAdded', handleJobAdded);
 
-  }, [loadJobs]);
+  }, [user, loadJobs]);
 
 
   const handleUpdateJob = async (updatedJob: Job) => {
@@ -118,8 +125,6 @@ export function JobTracker() {
   }
 
   return (
-    <div className="w-full pb-12 md:pb-16 lg:pb-20">
-      <div className="container px-4 md:px-6">
         <Card>
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
@@ -158,7 +163,7 @@ export function JobTracker() {
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
                     <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
-                    <p className="mt-1 text-sm">Paste a job description above to automatically track a job, or add one manually.</p>
+                    <p className="mt-1 text-sm">Go to the Resume Tool to automatically track a job, or add one manually.</p>
                 </div>
             )}
             {!loading && user && jobs.length > 0 && (
@@ -209,8 +214,6 @@ export function JobTracker() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
   );
 }
 

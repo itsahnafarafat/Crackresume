@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link";
-import { Info, LogOut, ShieldCheck, User as UserIcon, Star, ExternalLink, Menu, BookOpen, UserCog } from "lucide-react";
+import { Info, LogOut, ShieldCheck, User as UserIcon, ExternalLink, Menu, BookOpen, UserCog, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -18,24 +18,27 @@ export function Header() {
   const navLinks = (
     <>
         <Link
+            href="/"
+            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+        >
+            Resume Tool
+        </Link>
+        <Link
             href="/learning-hub"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
         >
-            <BookOpen className="mr-2 h-4 w-4" />
             Learning Hub
         </Link>
         <Link
             href="/about"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
         >
-            <Info className="mr-2 h-4 w-4" />
             About
         </Link>
         <Link
             href="/privacy"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
         >
-            <ShieldCheck className="mr-2 h-4 w-4" />
             Privacy Policy
         </Link>
     </>
@@ -67,6 +70,12 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                    <Link href="/dashboard">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                    </Link>
+                </DropdownMenuItem>
                 {user.isAdmin && (
                    <DropdownMenuItem asChild>
                       <Link href="/admin">
@@ -126,5 +135,3 @@ export function Header() {
     </header>
   );
 }
-
-    
