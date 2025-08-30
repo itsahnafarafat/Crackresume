@@ -29,11 +29,23 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+const motivationalQuotes = [
+    "Crafting your story, one keyword at a time...",
+    "The right words can open any door. Let's find them.",
+    "Behind every great career is a great resume. We're on it.",
+    "Just a moment... turning your experience into opportunity.",
+    "Your next big break is being written as we speak.",
+    "Don't just list your skills, let's make them shine!",
+    "Building a bridge between you and your dream job.",
+    "Believe in your potential. We're just here to format it nicely."
+];
+
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
+  const [motivationalMessage, setMotivationalMessage] = useState(motivationalQuotes[0]);
   const { toast } = useToast();
   const { user } = useAuth();
   
@@ -42,6 +54,19 @@ export function AtsResumeGenerator() {
       setResumeContent(user.resumeContent);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (isPending) {
+        const interval = setInterval(() => {
+            setMotivationalMessage(prev => {
+                const currentIndex = motivationalQuotes.indexOf(prev);
+                const nextIndex = (currentIndex + 1) % motivationalQuotes.length;
+                return motivationalQuotes[nextIndex];
+            });
+        }, 2500);
+        return () => clearInterval(interval);
+    }
+  }, [isPending]);
 
 
   const handleGenerate = () => {
@@ -375,7 +400,7 @@ export function AtsResumeGenerator() {
        {isPending && (
             <div className="flex flex-col items-center justify-center h-96 space-y-4">
                 <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-muted-foreground">Analyzing, rewriting, and tracking...</p>
+                <p className="text-muted-foreground font-semibold text-lg animate-pulse">{motivationalMessage}</p>
                 <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
             </div>
         )}
