@@ -15,14 +15,6 @@ export function Header() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   
-  const handleManageSubscription = () => {
-    if (!user || !user.updatePaymentMethodUrl) {
-       toast({ title: "Error", description: "Subscription management URL not found.", variant: "destructive" });
-      return;
-    }
-    window.location.href = user.updatePaymentMethodUrl;
-  };
-
   const navLinks = (
     <>
         <Link
@@ -31,13 +23,6 @@ export function Header() {
         >
             <BookOpen className="mr-2 h-4 w-4" />
             Learning Hub
-        </Link>
-        <Link
-            href="/pricing"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
-        >
-            <Star className="mr-2 h-4 w-4" />
-            Pricing
         </Link>
         <Link
             href="/about"
@@ -88,12 +73,6 @@ export function Header() {
                         <UserCog className="mr-2 h-4 w-4" />
                         <span>Admin</span>
                       </Link>
-                  </DropdownMenuItem>
-                )}
-                {user.subscriptionStatus === 'active' && (
-                  <DropdownMenuItem onSelect={handleManageSubscription}>
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    <span>Manage Subscription</span>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={logout}>
@@ -147,3 +126,5 @@ export function Header() {
     </header>
   );
 }
+
+    

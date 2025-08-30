@@ -29,8 +29,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-const FREE_GENERATION_LIMIT = 3;
-
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -38,20 +36,7 @@ export function AtsResumeGenerator() {
   const [result, setResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-
-  const canGenerate = () => {
-    if (!user) return true; // Guests can always try
-    if (user.subscriptionStatus === 'active') return true;
-    
-    const today = new Date().toISOString().split('T')[0];
-    if (user.lastGenerationDate !== today) {
-        return true; // First generation of the day
-    }
-    
-    return (user.generationsToday || 0) < FREE_GENERATION_LIMIT;
-  }
-
+  
   const handleGenerate = () => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
       toast({
@@ -61,12 +46,6 @@ export function AtsResumeGenerator() {
       });
       return;
     }
-
-    if (!canGenerate()) {
-        setShowUpgradeDialog(true);
-        return;
-    }
-
 
     startTransition(async () => {
       setResult(null);
@@ -91,15 +70,6 @@ export function AtsResumeGenerator() {
             ]);
     
             setResult(atsResult);
-
-            // Update user generation count
-            const userRef = doc(firestore, 'users', user.uid);
-            const today = new Date().toISOString().split('T')[0];
-            if (user.lastGenerationDate === today) {
-                await updateDoc(userRef, { generationsToday: increment(1) });
-            } else {
-                await updateDoc(userRef, { generationsToday: 1, lastGenerationDate: today });
-            }
     
             const newJob: Omit<Job, 'id'> = {
               userId: user.uid,
@@ -285,43 +255,8 @@ export function AtsResumeGenerator() {
     return 'bg-red-500';
   }
 
-  const generationsLeft = user && user.subscriptionStatus === 'free'
-    ? FREE_GENERATION_LIMIT - (user.generationsToday || 0)
-    : null;
-
   return (
     <div className="flex flex-col gap-8">
-      {user && user.subscriptionStatus === 'free' && (
-        <Card className="bg-yellow-50 border-yellow-200">
-            <CardHeader>
-                <CardTitle className="text-yellow-800">Free Plan</CardTitle>
-                <CardDescription className="text-yellow-700">
-                    You have {generationsLeft} generations left today. {' '}
-                    <Link href="/pricing" className="underline font-bold">Upgrade for unlimited generations.</Link>
-                </CardDescription>
-            </CardHeader>
-        </Card>
-      )}
-
-       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-            <AlertDialogTitle>You've reached your daily limit</AlertDialogTitle>
-            <AlertDialogDescription>
-                Free users can generate up to {FREE_GENERATION_LIMIT} resumes per day. Please upgrade to a premium plan for unlimited access.
-            </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-            <AlertDialogAction asChild>
-                <Link href="/pricing">
-                    <Star className="mr-2 h-4 w-4" /> Upgrade
-                </Link>
-            </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
@@ -442,3 +377,5 @@ export function AtsResumeGenerator() {
     </div>
   );
 }
+
+    
