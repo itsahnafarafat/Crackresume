@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import type { BlogPost } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -110,19 +110,25 @@ export default function AdminPage() {
     const { toast } = useToast();
 
     useEffect(() => {
-        if (!loading) {
-            if (!user || !user.isAdmin) {
-                router.push('/');
-            } else {
-                fetchPosts();
-            }
+        // Wait until authentication is complete
+        if (loading) return;
+
+        // If not logged in, or not an admin, redirect
+        if (!user || !user.isAdmin) {
+            router.push('/');
+            return;
         }
+        
+        // Fetch posts if the user is an admin
+        fetchPosts();
+
     }, [user, loading, router]);
     
     const fetchPosts = async () => {
         setPageLoading(true);
         try {
-            const querySnapshot = await getDocs(collection(firestore, 'posts'));
+            const q = query(collection(firestore, 'posts'), orderBy('date', 'desc'));
+            const querySnapshot = await getDocs(q);
             const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPostWithId));
             // Ensure date is a string
             postsData.forEach(post => {
@@ -143,7 +149,7 @@ export default function AdminPage() {
         try {
             if (id) {
                 const postRef = doc(firestore, 'posts', id);
-                await updateDoc(postRef, data);
+                await updateDoc(postRef, { ...data, date: serverTimestamp() });
                 toast({ title: "Success", description: "Post updated successfully." });
             } else {
                 await addDoc(collection(firestore, 'posts'), {
@@ -172,16 +178,12 @@ export default function AdminPage() {
         }
     };
 
-    if (loading || pageLoading) {
+    if (loading || pageLoading || !user?.isAdmin) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin" />
             </div>
         );
-    }
-    
-    if (!user?.isAdmin) {
-        return null;
     }
 
     return (
