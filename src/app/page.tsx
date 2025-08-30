@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { JobTracker } from "@/components/job-tracker";
 
 
 export default function Home() {
@@ -43,6 +44,13 @@ export default function Home() {
             <div className="mx-auto max-w-7xl mt-12">
               <AtsResumeGenerator />
             </div>
+            
+             {user && (
+                <div className="mx-auto max-w-7xl mt-12">
+                    <JobTracker limit={5} />
+                </div>
+             )}
+
           </div>
         </div>
       </main>

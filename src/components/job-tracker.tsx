@@ -13,9 +13,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Job } from '@/lib/types';
-import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn } from 'lucide-react';
+import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp, limit as firestoreLimit } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import Link from 'next/link';
 
@@ -34,7 +34,7 @@ const formatDate = (date: string | { toDate: () => Date }): string => {
 };
 
 
-export function JobTracker() {
+export function JobTracker({ limit }: { limit?: number }) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -49,11 +49,17 @@ export function JobTracker() {
     
     setLoading(true);
     try {
-      const q = query(
-        collection(firestore, 'jobs'), 
+      const jobQueryConstraints = [
         where('userId', '==', user.uid),
-        orderBy('applicationDate', 'desc')
-      );
+        orderBy('applicationDate', 'desc'),
+      ];
+
+      if (limit) {
+          jobQueryConstraints.push(firestoreLimit(limit));
+      }
+
+      const q = query(collection(firestore, 'jobs'), ...jobQueryConstraints);
+
       const querySnapshot = await getDocs(q);
       const jobsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Job));
       setJobs(jobsData);
@@ -67,7 +73,7 @@ export function JobTracker() {
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, toast, limit]);
 
   useEffect(() => {
     if (user) {
@@ -211,6 +217,13 @@ export function JobTracker() {
                 </TableBody>
               </Table>
              </div>
+            )}
+             {limit && user && jobs.length > 0 && (
+              <div className="mt-4 flex justify-end">
+                <Button asChild variant="link">
+                  <Link href="/dashboard">View All Jobs <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
