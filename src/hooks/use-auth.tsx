@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async ({ email, password }: LoginFormData) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard');
+      router.push('/');
        toast({ title: "Login Successful", description: "Welcome back!"});
     } catch (error: any) {
       console.error("Login error:", error);
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAdmin: false,
           resumeContent: '',
       });
-      router.push('/dashboard');
+      router.push('/');
       toast({ title: "Sign Up Successful", description: "Welcome to Crackresume!"});
     } catch (error: any) {
       console.error("Signup error:", error);

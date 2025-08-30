@@ -13,16 +13,9 @@ import { Loader2 } from "lucide-react";
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to dashboard if logged in
-    if (!loading && user) {
-      router.push('/dashboard');
-    }
-  }, [user, loading, router]);
   
-  if (loading || user) {
-    // Show a loading state or nothing while redirecting
+  if (loading) {
+    // Show a loading state or nothing while checking auth
     return (
         <div className="flex h-screen items-center justify-center">
              <Loader2 className="h-12 w-12 animate-spin" />
