@@ -1,7 +1,4 @@
 
-// This file is no longer used for displaying blog posts, which are now fetched from Firestore.
-// It can be kept for reference or as a backup, but it is not connected to the live application.
-// To add or edit posts, use the new Admin Dashboard.
 import type { BlogPost } from './types';
 
 export const blogPosts: BlogPost[] = [

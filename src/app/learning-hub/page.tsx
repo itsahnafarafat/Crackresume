@@ -7,17 +7,20 @@ import type { BlogPost } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { blogPosts as staticBlogPosts } from "@/lib/blog-posts";
+import { format } from "date-fns";
 
 
 async function getBlogPosts(): Promise<BlogPost[] | 'unconfigured' | 'error'> {
     if (!firestore) {
-      console.warn("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
-      return 'unconfigured';
+      console.warn("Firestore not initialized. Using static fallback.");
+      return staticBlogPosts.map(p => ({...p, date: format(new Date(p.date), 'yyyy-MM-dd')}));
     }
     try {
         const postsSnapshot = await firestore.collection('posts').orderBy('date', 'desc').get();
         if (postsSnapshot.empty) {
-            return [];
+             // Fallback to static posts if firestore is empty
+            return staticBlogPosts.map(p => ({...p, date: format(new Date(p.date), 'yyyy-MM-dd')}));
         }
         const posts = postsSnapshot.docs.map(doc => {
             const data = doc.data() as BlogPost;

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, User, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { blogPosts as staticBlogPosts } from "@/lib/blog-posts";
 
 interface BlogPostPageProps {
   params: {
@@ -19,7 +20,14 @@ interface BlogPostPageProps {
 
 async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured' | 'error'> {
     if (!firestore) {
-      console.warn("Firestore not initialized. FIREBASE_SERVICE_ACCOUNT_KEY might be missing.");
+      console.warn("Firestore not initialized. Using static fallback.");
+      const staticPost = staticBlogPosts.find(p => p.slug === slug);
+      if (staticPost) {
+        return {
+            ...staticPost,
+            date: format(new Date(staticPost.date), 'PPP')
+        };
+      }
       return 'unconfigured';
     }
     try {
@@ -27,6 +35,13 @@ async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured' |
       const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
       
       if (snapshot.empty) {
+          const staticPost = staticBlogPosts.find(p => p.slug === slug);
+          if (staticPost) {
+            return {
+                ...staticPost,
+                date: format(new Date(staticPost.date), 'PPP')
+            };
+          }
           return null;
       }
 
@@ -51,18 +66,24 @@ async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured' |
 }
 
 export async function generateStaticParams() {
-  if (!firestore) {
-    return [];
+  let slugs: { slug: string }[] = [];
+  
+  if (firestore) {
+    try {
+      const postsSnapshot = await firestore.collection('posts').get();
+      slugs = postsSnapshot.docs.map((doc) => ({
+        slug: doc.data().slug,
+      }));
+    } catch (error) {
+      console.warn("Could not generate static params from Firestore, using static fallback.");
+    }
   }
-  try {
-    const postsSnapshot = await firestore.collection('posts').get();
-    return postsSnapshot.docs.map((doc) => ({
-      slug: doc.data().slug,
-    }));
-  } catch (error) {
-    console.warn("Could not generate static params for blog posts, Firestore might be unconfigured or have restrictive rules.");
-    return [];
+
+  if (slugs.length === 0) {
+    slugs = staticBlogPosts.map(post => ({ slug: post.slug }));
   }
+
+  return slugs;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
