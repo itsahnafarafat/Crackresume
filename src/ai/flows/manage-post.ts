@@ -11,20 +11,25 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { BlogPostSchema, ManagePostInputSchema, ManagePostOutputSchema } from '@/lib/types';
 import * as admin from 'firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// Ensure Firebase Admin is initialized
-if (!admin.apps.length) {
-    try {
-        admin.initializeApp();
-    } catch (error) {
-        console.error('Firebase admin initialization error:', error);
+function initializeFirebase() {
+    if (!admin.apps.length) {
+        try {
+            // This will use Application Default Credentials on App Hosting.
+            // For local development, ensure you have the correct GOOGLE_APPLICATION_CREDENTIALS environment variable set.
+            admin.initializeApp();
+        } catch (error) {
+            console.error('Firebase admin initialization error:', error);
+            // We'll let getFirestore() throw the more specific error if initialization fails
+        }
     }
+    return getFirestore();
 }
-const firestore = getFirestore();
+
 
 export async function managePost(input: z.infer<typeof ManagePostInputSchema>): Promise<z.infer<typeof ManagePostOutputSchema>> {
     return managePostFlow(input);
@@ -37,6 +42,8 @@ const managePostFlow = ai.defineFlow(
         outputSchema: ManagePostOutputSchema,
     },
     async (input) => {
+        const firestore = initializeFirebase();
+
         try {
             // 1. Verify user is an admin
             const userDoc = await firestore.collection('users').doc(input.userId).get();
