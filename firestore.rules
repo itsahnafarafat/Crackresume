@@ -2,19 +2,24 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Users can only read or write to their own user document.
     match /users/{userId} {
-      // Users can read and write to their own document.
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
     }
-    match /jobs/{jobId} {
-      // Users can read and write jobs they own.
-      allow read, write: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
+    
+    // Only admins can create, update, or delete blog posts.
+    // Anyone can read blog posts.
     match /posts/{postId} {
-      // Anyone can read blog posts.
       allow read: if true;
-      // Only admins can write to blog posts.
-      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Users can perform all operations on their own job documents.
+    // The `list` permission is crucial for allowing queries.
+    match /jobs/{jobId} {
+      allow read, write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow list: if request.auth != null && request.query.filters.size() == 1 && request.query.filters[0].field == 'userId' && request.query.filters[0].value == request.auth.uid;
     }
   }
 }
