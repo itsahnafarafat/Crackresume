@@ -27,7 +27,6 @@ export const BlogPostSchema = z.object({
   excerpt: z.string(),
   author: z.string(),
   date: z.any().describe("Can be a string or a Firestore Timestamp."),
-  imageUrl: z.string().url(),
   content: z.string(),
 });
 export type BlogPost = z.infer<typeof BlogPostSchema>;

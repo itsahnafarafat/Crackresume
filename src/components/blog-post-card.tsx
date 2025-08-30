@@ -1,6 +1,5 @@
 
 import type { BlogPost } from "@/lib/types";
-import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { ArrowRight } from "lucide-react";
@@ -10,16 +9,6 @@ export function BlogPostCard({ post }: { post: BlogPost }) {
   return (
     <Link href={`/learning-hub/${post.slug}`} className="group">
         <Card className="h-full overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-            <CardHeader className="p-0">
-                <Image 
-                    src={post.imageUrl} 
-                    alt={post.title} 
-                    width={600} 
-                    height={400} 
-                    className="w-full h-48 object-cover"
-                    data-ai-hint="blog post"
-                />
-            </CardHeader>
             <CardContent className="p-6">
                 <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">{post.title}</CardTitle>
                 <CardDescription className="mb-4 text-muted-foreground">{post.excerpt}</CardDescription>

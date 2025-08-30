@@ -10,7 +10,6 @@ export const blogPosts: BlogPost[] = [
         excerpt: 'Discover the top resume keywords that Applicant Tracking Systems (ATS) look for in 2025. Optimize your CV to rank higher and land more interviews.',
         author: 'Unknown, Career Strategist',
         date: '2025-08-30',
-        imageUrl: 'https://picsum.photos/600/400',
         content: `
           <p class="lead">Over 95% of Fortune 500 companies use Applicant Tracking Systems (ATS) to filter job applications. Without the right keywords, your resume may never reach a human recruiter. Here's a comprehensive guide to the top keywords for 2025.</p>
       

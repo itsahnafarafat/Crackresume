@@ -3,7 +3,6 @@ import { Header } from "@/components/shared/header";
 import { blogPosts } from "@/lib/blog-posts";
 import type { BlogPost } from "@/lib/types";
 import { format } from 'date-fns';
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Calendar, User } from "lucide-react";
@@ -61,18 +60,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
             </div>
 
-            <Image
-              src={post.imageUrl}
-              alt={post.title}
-              width={1200}
-              height={600}
-              className="w-full h-auto rounded-lg object-cover mb-8 shadow-lg"
-              priority
-              data-ai-hint="blog post header"
-            />
-
             <div
-              className="prose prose-lg max-w-none"
+              className="prose prose-lg max-w-none mt-8"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </div>
