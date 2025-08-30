@@ -1,25 +1,23 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Users can read and update their own user document.
+
+    // Users can read and update their own profile.
     match /users/{userId} {
       allow read, update: if request.auth.uid == userId;
       allow create: if request.auth.uid != null;
     }
 
-    // Users can create, read, update, and delete their own jobs.
+    // Users can CUD their own jobs, and read them.
     match /jobs/{jobId} {
-        allow read, write: if request.auth.uid == request.resource.data.userId;
+      allow create, read, update, delete: if request.auth.uid == request.resource.data.userId;
     }
     
-    // Posts can be read by anyone.
-    // Only admins can create, update, or delete posts.
+    // Blog posts can be read by anyone, but only modified by admins.
     match /posts/{postId} {
       allow read: if true;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow write: if request.auth.token.isAdmin == true;
     }
   }
 }
