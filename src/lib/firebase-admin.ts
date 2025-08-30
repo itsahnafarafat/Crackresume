@@ -3,17 +3,24 @@ import * as admin from 'firebase-admin';
 import { getApplicationDefault } from 'firebase-admin/app';
 import 'dotenv/config';
 
-// This is the recommended way to initialize the Firebase Admin SDK in Google-managed environments like Firebase App Hosting.
-// It uses Application Default Credentials and does not require manual management of service account keys.
+let firestore: admin.firestore.Firestore | null = null;
+
 if (!admin.apps.length) {
   try {
+    // When deployed to App Hosting, GOOGLE_APPLICATION_CREDENTIALS is automatically set.
+    // For local development, you must set this environment variable to point to your service account key file.
     admin.initializeApp({
       credential: getApplicationDefault(),
     });
+    firestore = admin.firestore();
   } catch (error: any) {
-    console.error('Firebase admin initialization error:', error.stack);
+    console.error('Firebase Admin SDK initialization error:', error.stack);
+    // Set firestore to null if initialization fails
+    firestore = null;
   }
+} else {
+  // If the app is already initialized, just get the firestore instance.
+  firestore = admin.firestore();
 }
 
-// Export a firestore instance. It will only be functional if initializeApp was successful.
-export const firestore = admin.apps.length > 0 ? admin.firestore() : null;
+export { firestore };

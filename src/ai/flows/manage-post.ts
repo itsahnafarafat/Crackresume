@@ -12,24 +12,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { BlogPostSchema, ManagePostInputSchema, ManagePostOutputSchema } from '@/lib/types';
+import { ManagePostInputSchema, ManagePostOutputSchema } from '@/lib/types';
+import { firestore } from '@/lib/firebase-admin'; // Import the initialized firestore instance
 import * as admin from 'firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore';
-
-function initializeFirebase() {
-    if (!admin.apps.length) {
-        try {
-            // This will use Application Default Credentials on App Hosting.
-            // For local development, ensure you have the correct GOOGLE_APPLICATION_CREDENTIALS environment variable set.
-            admin.initializeApp();
-        } catch (error) {
-            console.error('Firebase admin initialization error:', error);
-            // We'll let getFirestore() throw the more specific error if initialization fails
-        }
-    }
-    return getFirestore();
-}
-
 
 export async function managePost(input: z.infer<typeof ManagePostInputSchema>): Promise<z.infer<typeof ManagePostOutputSchema>> {
     return managePostFlow(input);
@@ -42,7 +27,11 @@ const managePostFlow = ai.defineFlow(
         outputSchema: ManagePostOutputSchema,
     },
     async (input) => {
-        const firestore = initializeFirebase();
+        if (!firestore) {
+            const errorMessage = 'Firestore is not initialized. Check server logs for Firebase Admin SDK initialization errors.';
+            console.error(errorMessage);
+            return { success: false, error: errorMessage };
+        }
 
         try {
             // 1. Verify user is an admin
@@ -59,6 +48,7 @@ const managePostFlow = ai.defineFlow(
                     if (!input.postData) {
                          return { success: false, error: 'Post data is required for creation.' };
                     }
+                    // Use the imported 'admin' namespace for FieldValue
                     await postsCollection.add({
                         ...input.postData,
                         date: admin.firestore.FieldValue.serverTimestamp(),
