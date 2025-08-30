@@ -1,23 +1,18 @@
 
 import * as admin from 'firebase-admin';
+import { getApplicationDefault } from 'firebase-admin/app';
 import 'dotenv/config';
 
-// Check if the service account key is available
-const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-
-// Initialize the app only if it hasn't been initialized and a service account key is provided
-if (!admin.apps.length && serviceAccountKey) {
+// This is the recommended way to initialize the Firebase Admin SDK in Google-managed environments like Firebase App Hosting.
+// It uses Application Default Credentials and does not require manual management of service account keys.
+if (!admin.apps.length) {
   try {
-    const serviceAccount = JSON.parse(serviceAccountKey);
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: getApplicationDefault(),
     });
   } catch (error: any) {
     console.error('Firebase admin initialization error:', error.stack);
   }
-} else if (!serviceAccountKey) {
-    // This warning will be logged on the server if the key is missing.
-    console.warn("Firebase Admin SDK: FIREBASE_SERVICE_ACCOUNT_KEY is not set. Server-side Firebase services will not be available.");
 }
 
 // Export a firestore instance. It will only be functional if initializeApp was successful.
