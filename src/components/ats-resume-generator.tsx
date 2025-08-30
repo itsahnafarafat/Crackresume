@@ -337,6 +337,14 @@ export function AtsResumeGenerator() {
           </Button>
        </div>
 
+       {isPending && (
+            <div className="flex flex-col items-center justify-center h-96 space-y-4">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <p className="text-muted-foreground font-semibold text-lg animate-pulse">{motivationalMessage}</p>
+                <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
+            </div>
+        )}
+
       {result && !isPending && (
         <div className="space-y-6">
             <Card className="shadow-lg">
@@ -396,14 +404,6 @@ export function AtsResumeGenerator() {
             </Card>
         </div>
       )}
-      
-       {isPending && (
-            <div className="flex flex-col items-center justify-center h-96 space-y-4">
-                <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <p className="text-muted-foreground font-semibold text-lg animate-pulse">{motivationalMessage}</p>
-                <p className="text-sm text-muted-foreground/80">This may take a moment.</p>
-            </div>
-        )}
     </div>
   );
 }
