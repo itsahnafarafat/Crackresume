@@ -7,21 +7,14 @@ import type { BlogPost } from "@/lib/types";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { blogPosts as staticBlogPosts } from "@/lib/blog-posts";
-import { format } from "date-fns";
-
 
 async function getBlogPosts(): Promise<BlogPost[] | 'unconfigured' | 'error'> {
     if (!firestore) {
-      console.warn("Firestore not initialized. Using static fallback.");
-      return staticBlogPosts.map(p => ({...p, date: format(new Date(p.date), 'yyyy-MM-dd')}));
+      console.warn("Firestore not initialized. Blog posts cannot be fetched.");
+      return 'unconfigured';
     }
     try {
         const postsSnapshot = await firestore.collection('posts').orderBy('date', 'desc').get();
-        if (postsSnapshot.empty) {
-             // Fallback to static posts if firestore is empty
-            return staticBlogPosts.map(p => ({...p, date: format(new Date(p.date), 'yyyy-MM-dd')}));
-        }
         const posts = postsSnapshot.docs.map(doc => {
             const data = doc.data() as BlogPost;
             if (data.date && typeof (data.date as any).toDate === 'function') {
@@ -35,7 +28,6 @@ async function getBlogPosts(): Promise<BlogPost[] | 'unconfigured' | 'error'> {
         return posts;
     } catch (error) {
         console.error("Error fetching blog posts from Firestore:", error);
-        // This could be a permission error if rules are not set correctly.
         return 'error';
     }
 }
