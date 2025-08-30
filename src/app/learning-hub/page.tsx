@@ -48,7 +48,7 @@ export default async function LearningHubPage() {
             : "There was an error fetching blog posts. Please check the server logs or Firestore security rules.";
 
        return (
-            <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg">
+            <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg shadow-sm">
                 <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
                 <h2 className="mt-4 text-2xl font-bold text-yellow-900">{title}</h2>
                 <p className="mt-2 text-yellow-700">{description}</p>
