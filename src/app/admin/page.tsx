@@ -7,14 +7,15 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
-import type { BlogPost } from '@/lib/types';
+import type { BlogPost, ManagePostInput } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { managePost } from '@/ai/flows/manage-post';
 
 type BlogPostWithId = BlogPost & { id: string };
 
@@ -109,21 +110,6 @@ export default function AdminPage() {
     const [pageLoading, setPageLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        // Wait until authentication is complete
-        if (loading) return;
-
-        // If not logged in, or not an admin, redirect
-        if (!user || !user.isAdmin) {
-            router.push('/');
-            return;
-        }
-        
-        // Fetch posts if the user is an admin
-        fetchPosts();
-
-    }, [user, loading, router]);
-    
     const fetchPosts = async () => {
         setPageLoading(true);
         try {
@@ -137,6 +123,7 @@ export default function AdminPage() {
               }
             });
 
+            // Sort posts by date on the client-side
             postsData.sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
 
             setPosts(postsData);
@@ -148,40 +135,79 @@ export default function AdminPage() {
         }
     };
 
-    const handleSavePost = async (data: Omit<BlogPost, 'date'>, id?: string) => {
-        try {
-            if (id) {
-                const postRef = doc(firestore, 'posts', id);
-                await updateDoc(postRef, { ...data, date: serverTimestamp() });
-                toast({ title: "Success", description: "Post updated successfully." });
-            } else {
-                await addDoc(collection(firestore, 'posts'), {
-                    ...data,
-                    date: serverTimestamp()
-                });
-                toast({ title: "Success", description: "Post created successfully." });
-            }
+    useEffect(() => {
+        if (loading) return;
+
+        if (!user) {
+             router.push('/login');
+             return;
+        }
+        
+        if (user && !user.isAdmin) {
+             router.push('/');
+             return;
+        }
+        
+        if (user && user.isAdmin) {
             fetchPosts();
-        } catch (error) {
+        } else {
+             setPageLoading(false);
+        }
+    }, [user, loading, router]);
+    
+
+    const handleSavePost = async (data: Omit<BlogPost, 'date'>, id?: string) => {
+        if (!user?.uid) {
+            toast({ title: "Authentication Error", description: "You must be logged in.", variant: "destructive" });
+            return;
+        }
+        try {
+            const input: ManagePostInput = {
+                action: id ? 'update' : 'create',
+                postId: id,
+                postData: data,
+                userId: user.uid,
+            };
+            const result = await managePost(input);
+            if (result.success) {
+                 toast({ title: "Success", description: `Post ${id ? 'updated' : 'created'} successfully.` });
+                 fetchPosts();
+            } else {
+                throw new Error(result.error || 'An unknown error occurred.');
+            }
+        } catch (error: any) {
             console.error("Error saving post:", error);
-            toast({ title: "Error", description: "Could not save the post.", variant: "destructive" });
+            toast({ title: "Error", description: `Could not save the post: ${error.message}`, variant: "destructive" });
         }
     };
 
     const handleDeletePost = async (id: string) => {
+        if (!user?.uid) {
+            toast({ title: "Authentication Error", description: "You must be logged in.", variant: "destructive" });
+            return;
+        }
         if (window.confirm("Are you sure you want to delete this post?")) {
             try {
-                await deleteDoc(doc(firestore, 'posts', id));
-                toast({ title: "Success", description: "Post deleted." });
-                fetchPosts();
-            } catch (error) {
+                const input: ManagePostInput = {
+                    action: 'delete',
+                    postId: id,
+                    userId: user.uid,
+                };
+                const result = await managePost(input);
+                if (result.success) {
+                     toast({ title: "Success", description: "Post deleted." });
+                     fetchPosts();
+                } else {
+                     throw new Error(result.error || 'An unknown error occurred.');
+                }
+            } catch (error: any) {
                  console.error("Error deleting post:", error);
-                 toast({ title: "Error", description: "Could not delete the post.", variant: "destructive" });
+                 toast({ title: "Error", description: `Could not delete the post: ${error.message}`, variant: "destructive" });
             }
         }
     };
 
-    if (loading || !user) {
+    if (loading || pageLoading && !posts.length) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin" />
@@ -189,7 +215,7 @@ export default function AdminPage() {
         );
     }
     
-    if (!user.isAdmin) {
+    if (!user || !user.isAdmin) {
          return (
             <div className="flex h-screen items-center justify-center">
                 <Card>

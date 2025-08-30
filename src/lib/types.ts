@@ -21,15 +21,30 @@ export interface UserData extends FirebaseUser {
     resumeContent?: string;
 }
 
-export interface BlogPost {
-  slug: string;
-  title: string;
-  excerpt: string;
-  author: string;
-  date: string | Timestamp;
-  imageUrl: string;
-  content: string;
-}
+export const BlogPostSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  excerpt: z.string(),
+  author: z.string(),
+  date: z.any().describe("Can be a string or a Firestore Timestamp."),
+  imageUrl: z.string().url(),
+  content: z.string(),
+});
+export type BlogPost = z.infer<typeof BlogPostSchema>;
+
+export const ManagePostInputSchema = z.object({
+    action: z.enum(['create', 'update', 'delete']),
+    userId: z.string().describe("The UID of the user performing the action."),
+    postId: z.string().optional().describe("The ID of the post (for update/delete)."),
+    postData: BlogPostSchema.omit({ date: true }).optional().describe("The post data (for create/update).")
+});
+export type ManagePostInput = z.infer<typeof ManagePostInputSchema>;
+
+export const ManagePostOutputSchema = z.object({
+    success: z.boolean(),
+    error: z.string().optional(),
+});
+export type ManagePostOutput = z.infer<typeof ManagePostOutputSchema>;
 
 
 export const loginFormSchema = z.object({
