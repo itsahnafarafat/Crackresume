@@ -1,15 +1,13 @@
 
-
 import { Header } from "@/components/shared/header";
-import { firestore } from "@/lib/firebase-admin";
+import { blogPosts } from "@/lib/blog-posts";
 import type { BlogPost } from "@/lib/types";
 import { format } from 'date-fns';
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, User, AlertTriangle } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Calendar, User } from "lucide-react";
+import Link from "next/link";
 
 interface BlogPostPageProps {
   params: {
@@ -17,90 +15,24 @@ interface BlogPostPageProps {
   };
 }
 
-async function getPost(slug: string): Promise<BlogPost | null | 'unconfigured' | 'error'> {
-    if (!firestore) {
-      console.warn("Firestore not initialized. Using static fallback.");
-      return 'unconfigured';
-    }
-    try {
-      const postsRef = firestore.collection('posts');
-      const snapshot = await postsRef.where('slug', '==', slug).limit(1).get();
-      
-      if (snapshot.empty) {
-          return null;
-      }
-
-      const doc = snapshot.docs[0];
-      const data = doc.data() as BlogPost;
-      
-      if (data.date && typeof (data.date as any).toDate === 'function') {
-          data.date = format((data.date as any).toDate(), 'PPP');
-      } else if (typeof data.date === 'string') {
-          try {
-            data.date = format(new Date(data.date as string), 'PPP');
-          } catch(e) {
-            // keep original string if it's not a valid date
-          }
-      }
-      
-      return data;
-    } catch (e) {
-      console.error(`Error fetching post with slug "${slug}":`, e);
-      return 'error';
-    }
+function getPost(slug: string): BlogPost | undefined {
+  return blogPosts.find((post) => post.slug === slug);
 }
 
 export async function generateStaticParams() {
-  let slugs: { slug: string }[] = [];
-  
-  if (firestore) {
-    try {
-      const postsSnapshot = await firestore.collection('posts').get();
-      slugs = postsSnapshot.docs.map((doc) => ({
-        slug: doc.data().slug,
-      }));
-    } catch (error) {
-      console.warn("Could not generate static params from Firestore, using static fallback.");
-    }
-  }
-
-  return slugs;
+  return blogPosts.map((post) => ({
+    slug: post.slug,
+  }));
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = await getPost(params.slug);
-
-  if (post === 'unconfigured' || post === 'error') {
-     const title = post === 'unconfigured' ? 'Blog Content Not Available' : 'Error Loading Post';
-     const description = post === 'unconfigured'
-        ? "The blog is not currently configured. The site administrator needs to provide the `FIREBASE_SERVICE_ACCOUNT_KEY` to connect to the database."
-        : "There was an error fetching this blog post. Please check the server logs or Firestore security rules.";
-    return (
-       <div className="flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">
-             <div className="container mx-auto py-12 px-4 md:px-6">
-                <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg shadow-sm">
-                    <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
-                    <h1 className="mt-4 text-2xl font-bold text-yellow-900">{title}</h1>
-                    <p className="mt-2 text-yellow-700">{description}</p>
-                    <div className="mt-6">
-                         <Button asChild>
-                            <Link href="/">
-                                &larr; Back to Homepage
-                            </Link>
-                         </Button>
-                    </div>
-                </div>
-            </div>
-          </main>
-      </div>
-    );
-  }
+  const post = getPost(params.slug);
 
   if (!post) {
     notFound();
   }
+
+  const formattedDate = format(new Date(post.date as string), 'PPP');
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -125,7 +57,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
                  <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <time dateTime={post.date as string}>{post.date as string}</time>
+                    <time dateTime={post.date as string}>{formattedDate}</time>
                 </div>
             </div>
 

@@ -1,64 +1,12 @@
 
-
 import { BlogPostCard } from "@/components/blog-post-card";
 import { Header } from "@/components/shared/header";
-import { firestore } from "@/lib/firebase-admin";
+import { blogPosts } from "@/lib/blog-posts";
 import type { BlogPost } from "@/lib/types";
-import { AlertTriangle } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-
-async function getBlogPosts(): Promise<BlogPost[] | 'unconfigured' | 'error'> {
-    if (!firestore) {
-      console.warn("Firestore not initialized. Blog posts cannot be fetched.");
-      return 'unconfigured';
-    }
-    try {
-        const postsSnapshot = await firestore.collection('posts').orderBy('date', 'desc').get();
-        const posts = postsSnapshot.docs.map(doc => {
-            const data = doc.data() as BlogPost;
-            if (data.date && typeof (data.date as any).toDate === 'function') {
-                data.date = (data.date as any).toDate().toISOString().split('T')[0];
-            }
-            return {
-                ...data,
-                slug: data.slug,
-            };
-        });
-        return posts;
-    } catch (error) {
-        console.error("Error fetching blog posts from Firestore:", error);
-        return 'error';
-    }
-}
 
 export default async function LearningHubPage() {
-  const blogPosts = await getBlogPosts();
-  
   const renderContent = () => {
-    if (blogPosts === 'unconfigured' || blogPosts === 'error') {
-        const title = blogPosts === 'unconfigured' ? 'Blog Content Not Available' : 'Error Loading Posts';
-        const description = blogPosts === 'unconfigured'
-            ? "The blog is not currently configured. The site administrator needs to provide the `FIREBASE_SERVICE_ACCOUNT_KEY` to connect to the database."
-            : "There was an error fetching blog posts. Please check the server logs or Firestore security rules.";
-
-       return (
-            <div className="max-w-3xl mx-auto text-center bg-yellow-50 border border-yellow-200 p-8 rounded-lg shadow-sm">
-                <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
-                <h2 className="mt-4 text-2xl font-bold text-yellow-900">{title}</h2>
-                <p className="mt-2 text-yellow-700">{description}</p>
-                 <div className="mt-6">
-                     <Button asChild>
-                        <Link href="/">
-                            &larr; Back to Homepage
-                        </Link>
-                     </Button>
-                </div>
-            </div>
-       )
-    }
-
-    if (blogPosts.length === 0) {
+    if (!blogPosts || blogPosts.length === 0) {
         return (
             <div className="text-center py-12 text-muted-foreground">
                 <p>No blog posts found. Check back soon!</p>

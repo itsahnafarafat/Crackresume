@@ -2,18 +2,16 @@
 'use client';
 
 import Link from "next/link";
-import { Info, LogOut, ShieldCheck, User as UserIcon, ExternalLink, Menu, BookOpen, UserCog, LayoutDashboard, Home } from "lucide-react";
+import { LogOut, User as UserIcon, Menu, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "../ui/sheet";
 import { Separator } from "../ui/separator";
 
 export function Header() {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
   
   const navLinks = (
     <>
@@ -76,14 +74,6 @@ export function Header() {
                         <span>Dashboard</span>
                     </Link>
                 </DropdownMenuItem>
-                {user.isAdmin && (
-                   <DropdownMenuItem asChild>
-                      <Link href="/admin">
-                        <UserCog className="mr-2 h-4 w-4" />
-                        <span>Admin</span>
-                      </Link>
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
@@ -108,8 +98,16 @@ export function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left">
-                <nav className="grid gap-6 text-lg font-medium mt-8">
-                  {navLinks}
+                <div className="mt-8 flex flex-col gap-6 text-lg font-medium">
+                  <SheetClose asChild>
+                    <Link href="/" className="flex items-center space-x-2">
+                      <span className="font-bold text-xl">Crackresume</span>
+                    </Link>
+                  </SheetClose>
+                  <Separator />
+                  <nav className="grid gap-6">
+                    <SheetClose asChild>{navLinks}</SheetClose>
+                  </nav>
                    {!user && (
                     <>
                        <Separator />
@@ -127,7 +125,7 @@ export function Header() {
                         </div>
                     </>
                     )}
-                </nav>
+                </div>
               </SheetContent>
             </Sheet>
         </div>
