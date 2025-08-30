@@ -45,11 +45,9 @@ export default function Home() {
               <AtsResumeGenerator />
             </div>
             
-             {user && (
-                <div className="mx-auto max-w-7xl mt-12">
-                    <JobTracker limit={5} />
-                </div>
-             )}
+            <div className="mx-auto max-w-7xl mt-12">
+                <JobTracker limit={5} />
+            </div>
 
           </div>
         </div>
