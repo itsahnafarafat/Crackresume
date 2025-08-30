@@ -61,6 +61,7 @@ const managePostFlow = ai.defineFlow(
                     }
                     await postsCollection.doc(input.postId).update({
                         ...input.postData,
+                        // Use server timestamp on update as well to reflect the latest change
                         date: admin.firestore.FieldValue.serverTimestamp(),
                     });
                     break;

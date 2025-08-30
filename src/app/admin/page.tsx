@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2, Edit, Trash2 } from 'lucide-react';
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import type { BlogPost, ManagePostInput } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -113,44 +113,50 @@ export default function AdminPage() {
     const fetchPosts = async () => {
         setPageLoading(true);
         try {
-            const q = query(collection(firestore, 'posts'));
+            // Note: Firestore security rules must allow this query.
+            // For admin-only access, the rules should check the user's admin status.
+            const q = query(collection(firestore, 'posts'), orderBy('date', 'desc'));
             const querySnapshot = await getDocs(q);
             const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPostWithId));
             
+            // Format Firestore Timestamps to strings for client-side use
             postsData.forEach(post => {
               if (post.date && typeof (post.date as any).toDate === 'function') {
                 post.date = (post.date as any).toDate().toISOString().split('T')[0];
               }
             });
 
-            // Sort posts by date on the client-side
-            postsData.sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
-
             setPosts(postsData);
         } catch (error) {
             console.error("Error fetching posts:", error);
-            toast({ title: "Error", description: "Could not fetch posts.", variant: "destructive" });
+            // This toast is important for debugging security rule issues.
+            toast({ title: "Error", description: "Could not fetch posts. Check Firestore security rules and console for details.", variant: "destructive" });
         } finally {
             setPageLoading(false);
         }
     };
 
     useEffect(() => {
+        // Wait until auth state is confirmed
         if (loading) return;
 
+        // If not logged in, redirect to login
         if (!user) {
              router.push('/login');
              return;
         }
         
+        // If logged in but not an admin, redirect to homepage
         if (user && !user.isAdmin) {
              router.push('/');
              return;
         }
         
+        // If logged in and is an admin, fetch the data
         if (user && user.isAdmin) {
             fetchPosts();
         } else {
+            // Should not happen, but as a fallback, stop loading.
              setPageLoading(false);
         }
     }, [user, loading, router]);
@@ -171,7 +177,7 @@ export default function AdminPage() {
             const result = await managePost(input);
             if (result.success) {
                  toast({ title: "Success", description: `Post ${id ? 'updated' : 'created'} successfully.` });
-                 fetchPosts();
+                 fetchPosts(); // Refetch posts to show the new/updated one
             } else {
                 throw new Error(result.error || 'An unknown error occurred.');
             }
@@ -196,7 +202,7 @@ export default function AdminPage() {
                 const result = await managePost(input);
                 if (result.success) {
                      toast({ title: "Success", description: "Post deleted." });
-                     fetchPosts();
+                     fetchPosts(); // Refetch posts to remove the deleted one
                 } else {
                      throw new Error(result.error || 'An unknown error occurred.');
                 }
@@ -207,7 +213,8 @@ export default function AdminPage() {
         }
     };
 
-    if (loading || pageLoading && !posts.length) {
+    // Loading state for initial auth check
+    if (loading) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin" />
@@ -215,6 +222,7 @@ export default function AdminPage() {
         );
     }
     
+    // This state covers the case where the user is definitively not an admin or not logged in.
     if (!user || !user.isAdmin) {
          return (
             <div className="flex h-screen items-center justify-center">
@@ -231,6 +239,7 @@ export default function AdminPage() {
         );
     }
 
+    // Main content for authenticated admin
     return (
         <div className="container mx-auto py-12 px-4 md:px-6">
             <Card>
