@@ -127,15 +127,18 @@ export default function AdminPage() {
     const fetchPosts = async () => {
         setPageLoading(true);
         try {
-            const q = query(collection(firestore, 'posts'), orderBy('date', 'desc'));
+            const q = query(collection(firestore, 'posts'));
             const querySnapshot = await getDocs(q);
             const postsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlogPostWithId));
-            // Ensure date is a string
+            
             postsData.forEach(post => {
               if (post.date && typeof (post.date as any).toDate === 'function') {
                 post.date = (post.date as any).toDate().toISOString().split('T')[0];
               }
             });
+
+            postsData.sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
+
             setPosts(postsData);
         } catch (error) {
             console.error("Error fetching posts:", error);
@@ -178,10 +181,26 @@ export default function AdminPage() {
         }
     };
 
-    if (loading || pageLoading || !user?.isAdmin) {
+    if (loading || !user) {
         return (
             <div className="flex h-screen items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin" />
+            </div>
+        );
+    }
+    
+    if (!user.isAdmin) {
+         return (
+            <div className="flex h-screen items-center justify-center">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Access Denied</CardTitle>
+                        <CardDescription>You do not have permission to view this page.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button onClick={() => router.push('/')}>Go to Homepage</Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
@@ -202,29 +221,36 @@ export default function AdminPage() {
                     />
                 </CardHeader>
                 <CardContent>
-                    <ul className="space-y-4">
-                        {posts.map(post => (
-                            <li key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                <div>
-                                    <h3 className="font-semibold">{post.title}</h3>
-                                    <p className="text-sm text-muted-foreground">/learning-hub/{post.slug}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                     <PostFormDialog 
-                                        post={post}
-                                        onSave={(data) => handleSavePost(data, post.id)} 
-                                        triggerButton={
-                                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                                        } 
-                                    />
-                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeletePost(post.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </li>
-                        ))}
-                         {posts.length === 0 && <p className="text-center text-muted-foreground py-8">No posts found. Create one to get started!</p>}
-                    </ul>
+                    {pageLoading ? (
+                         <div className="text-center py-12 text-muted-foreground">
+                            <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+                            <h3 className="mt-4 text-lg font-semibold">Loading posts...</h3>
+                        </div>
+                    ) : (
+                        <ul className="space-y-4">
+                            {posts.map(post => (
+                                <li key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div>
+                                        <h3 className="font-semibold">{post.title}</h3>
+                                        <p className="text-sm text-muted-foreground">/learning-hub/{post.slug}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                         <PostFormDialog 
+                                            post={post}
+                                            onSave={(data) => handleSavePost(data, post.id)} 
+                                            triggerButton={
+                                                <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                                            } 
+                                        />
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDeletePost(post.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </li>
+                            ))}
+                             {posts.length === 0 && <p className="text-center text-muted-foreground py-8">No posts found. Create one to get started!</p>}
+                        </ul>
+                    )}
                 </CardContent>
             </Card>
         </div>
