@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/hooks/use-auth';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Crackresume - ATS-Friendly Resume Generator',
@@ -25,6 +26,20 @@ export default function RootLayout({
             {children}
             <Toaster />
         </AuthProvider>
+
+        {/* Google Analytics Script */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-6NCSY7LRWR`} // 👈 replace with your Measurement ID
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-6NCSY7LRWR'); 
+          `}
+        </Script>
       </body>
     </html>
   );
