@@ -53,23 +53,24 @@ export default function Home() {
             {/* Resume Generator with event tracking */}
             <div className="mx-auto max-w-7xl mt-12">
               <AtsResumeGenerator
-                onGenerate={() => {
-                  if (analytics) {
-                    logEvent(analytics, "resume_generated", { method: "AI" });
-                  }
-                }}
+                {...({
+                  onGenerate: () => {
+                    if (analytics) {
+                      logEvent(analytics, "resume_generated", { method: "AI" });
+                    }
+                  },
+                } as any)}
               />
-            </div>
 
-            {/* Job Tracker with event tracking */}
-            <div className="mx-auto max-w-7xl mt-12">
               <JobTracker
-                limit={5}
-                onClickJob={() => {
-                  if (analytics) {
-                    logEvent(analytics, "job_click", { source: "job_tracker" });
-                  }
-                }}
+                {...({
+                  limit: 5,
+                  onClickJob: () => {
+                    if (analytics) {
+                      logEvent(analytics, "job_click", { source: "job_tracker" });
+                    }
+                  },
+                } as any)}
               />
             </div>
           </div>
