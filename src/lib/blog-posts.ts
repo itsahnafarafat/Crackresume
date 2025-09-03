@@ -71,5 +71,76 @@ export const blogPosts: BlogPost[] = [
     <h2>Final Tip: Balance Visibility + Honesty</h2>
     <p>ATS optimization increases visibility, but authenticity and clarity get you hired. Use keywords that fit your real experience, placed in meaningful context. That’s how you win—both with bots and humans.</p>
   `
-    },     
+    },
+    
+    {
+  slug: 'how-to-make-ats-friendly-resume',
+  title: 'How to Make an ATS-Friendly Resume in 2025 (Step-by-Step Guide)',
+  excerpt: 'Learn how to create a resume that passes Applicant Tracking Systems (ATS) in 2025. Includes formatting tips, keyword strategies, templates, and common mistakes to avoid.',
+  author: 'Certified Career Coach & Resume Optimization Expert',
+  date: '2025-09-03',
+  content: `
+    <p class="lead">More than 90% of Fortune 500 companies use Applicant Tracking Systems (ATS) to filter resumes. If your resume isn’t ATS-friendly, it could be rejected before a human ever sees it. This guide will show you how to build a modern, ATS-compliant resume that gets noticed in 2025.</p>
+
+    <h2>What is an ATS-Friendly Resume?</h2>
+    <p>An ATS-friendly resume is designed so that Applicant Tracking Systems can easily scan, read, and rank it. It uses clean formatting, standard section headings, and keyword optimization to ensure your resume reaches the recruiter’s desk.</p>
+    
+    <h2>Why It Matters in 2025</h2>
+    <p>With thousands of applications submitted for competitive roles, ATS filters help recruiters save time. By learning how to create an ATS-compliant resume, you instantly increase your chances of landing interviews.</p>
+
+    <h2>1. Use a Simple, Clean Resume Format</h2>
+    <p>ATS systems struggle with overly complex designs. To pass, follow these best practices for <strong>ATS resume formatting</strong>:</p>
+    <ul>
+      <li>Use a single-column layout — avoid multiple columns or text boxes.</li>
+      <li>Stick to standard fonts (Arial, Calibri, Times New Roman).</li>
+      <li>Use clear headings like “Work Experience,” “Education,” and “Skills.”</li>
+      <li>Save your file as a .docx or .pdf (unless otherwise requested).</li>
+    </ul>
+    <blockquote>Tip: A beautiful design might impress humans, but if the ATS can’t parse it, your resume may never be seen.</blockquote>
+
+    <h2>2. Optimize Resume Keywords for ATS</h2>
+    <p>ATS software matches your resume against the job description. To make your resume ATS-optimized in 2025:</p>
+    <ul>
+      <li>Carefully read the job description and highlight repeating skills and terms.</li>
+      <li>Include both hard skills (e.g., “Python,” “Project Management,” “SEO”) and soft skills (e.g., “Leadership,” “Collaboration”).</li>
+      <li>Use industry-specific keywords — for example, “Financial Modeling” in Finance or “Agile” in IT.</li>
+      <li>Incorporate action verbs like “Developed,” “Led,” “Implemented,” and “Optimized.”</li>
+    </ul>
+    <p>Want inspiration? Check out our guide on the <a href="/ultimate-2025-ats-resume-keywords-boost-interviews">Top ATS Resume Keywords of 2025</a>.</p>
+
+    <h2>3. Structure Content for Both ATS & Humans</h2>
+    <p>While the ATS needs keywords, recruiters need clarity. To satisfy both:</p>
+    <ul>
+      <li>Use bullet points for achievements instead of long paragraphs.</li>
+      <li>Show measurable results — e.g., “Increased sales by 35% within six months.”</li>
+      <li>Align your “Professional Summary” with the job title and top skills.</li>
+      <li>List certifications and degrees in standard format (“B.Sc. in Computer Science”).</li>
+    </ul>
+
+    <h2>4. Avoid Common ATS Mistakes</h2>
+    <p>Many resumes fail ATS checks due to simple errors. Avoid these mistakes:</p>
+    <ul>
+      <li>Using headers, footers, or graphics — ATS can’t always read them.</li>
+      <li>Submitting in unusual formats (.png, .jpg, .odt).</li>
+      <li>Overstuffing keywords — unnatural repetition may flag your resume as spam.</li>
+      <li>Leaving out essential sections like Work Experience or Skills.</li>
+    </ul>
+
+    <h2>5. Test Your Resume Before Sending</h2>
+    <p>Before submitting, run your resume through an ATS resume checker or online parser. This helps you see exactly how recruiters will view your document. Adjust formatting and keywords until the results look correct.</p>
+
+    <h2>Quick Checklist for an ATS-Friendly Resume</h2>
+    <table>
+      <tr><th>Do</th><th>Don’t</th></tr>
+      <tr><td>Use standard headings (Work Experience, Education, Skills)</td><td>Use creative headings (My Journey, What I Do)</td></tr>
+      <tr><td>Save as .docx or .pdf</td><td>Save as image files or uncommon formats</td></tr>
+      <tr><td>Match keywords to job descriptions</td><td>Copy-paste all keywords randomly</td></tr>
+      <tr><td>Highlight measurable achievements</td><td>Write vague job duties</td></tr>
+    </table>
+
+    <h2>Final Thoughts</h2>
+    <p>An ATS-friendly resume doesn’t have to be boring — it just needs to be clear, keyword-optimized, and recruiter-friendly. Follow these steps, and you’ll dramatically increase your chances of making it past the ATS and into the hands of hiring managers in 2025.</p>
+  `
+},
+
 ];
