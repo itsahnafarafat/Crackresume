@@ -142,5 +142,63 @@ export const blogPosts: BlogPost[] = [
     <p>An ATS-friendly resume doesn’t have to be boring — it just needs to be clear, keyword-optimized, and recruiter-friendly. Follow these steps, and you’ll dramatically increase your chances of making it past the ATS and into the hands of hiring managers in 2025.</p>
   `
 },
+ {
+  slug: 'ats-resume-headlines-for-freshers-tech-2025',
+title: '25+ ATS-Friendly Resume Headlines for Freshers in Tech (2025)',
+excerpt: 'Struggling to write the perfect resume headline? Discover 25+ ATS-optimized examples tailored for freshers in tech and learn how to make your application stand out in 2025.',
+author: 'Career Coach & ATS Optimization Expert',
+date: '2025-09-04',
+content: `
+    <p class="lead">Breaking into tech as a fresher in 2025 is exciting—but also challenging. With Applicant Tracking Systems (ATS) filtering out most resumes, your headline needs to instantly grab attention and get past the bots. Here’s a collection of ATS-friendly resume headline examples designed specifically for freshers in tech.</p>
+
+    <h2>Why Your Resume Headline Matters</h2>
+    <p>Your resume headline is a short, impactful line at the top of your resume that summarizes who you are and what you offer. For freshers in tech, a strong headline can highlight your skills, projects, or certifications—even if you don’t have years of work experience.</p>
+
+    <h2>Tips to Write an ATS-Friendly Headline</h2>
+    <ul>
+        <li><strong>Use Keywords:</strong> Mirror the exact phrases from the job description (e.g., "Python Developer", "Cloud Engineer").</li>
+        <li><strong>Keep It Simple:</strong> Avoid buzzwords or fancy characters—ATS prefers clean text.</li>
+        <li><strong>Show Value:</strong> Highlight certifications, skills, or projects that set you apart.</li>
+        <li><strong>Update for 2025:</strong> Mention in-demand skills like AI, cloud computing, or cybersecurity.</li>
+    </ul>
+
+    <h2>25+ ATS-Friendly Resume Headlines for Freshers in Tech (2025)</h2>
+    <ol>
+        <li>“Entry-Level Software Engineer | Proficient in Python & Java”</li>
+        <li>“Computer Science Graduate | Aspiring Data Analyst with SQL & Excel Skills”</li>
+        <li>“Cloud Computing Enthusiast | AWS Certified Solutions Architect (2025)”</li>
+        <li>“Fresh Graduate in IT | Passion for Cybersecurity & Ethical Hacking”</li>
+        <li>“AI & Machine Learning Fresher | Skilled in TensorFlow & Python”</li>
+        <li>“B.Tech in Computer Science | Full-Stack Developer (React, Node.js)”</li>
+        <li>“Data Science Enthusiast | Projects in NLP & Data Visualization”</li>
+        <li>“Information Technology Graduate | Entry-Level QA Tester”</li>
+        <li>“Mobile App Developer Fresher | Android Studio & Kotlin”</li>
+        <li>“Cloud & DevOps Enthusiast | Docker, Kubernetes, AWS Basics”</li>
+        <li>“Computer Engineering Fresher | Skilled in C++, OOP & DSA”</li>
+        <li>“Graduate Software Developer | Interned at Fintech Startup”</li>
+        <li>“Junior Backend Developer | Django, Flask & REST APIs”</li>
+        <li>“Entry-Level Frontend Developer | React.js, JavaScript, HTML/CSS”</li>
+        <li>“AI-Driven Tech Enthusiast | Focused on Generative AI & LLMs”</li>
+        <li>“Cybersecurity Fresher | Certified in CEH (2025)”</li>
+        <li>“Data Analytics Fresher | Excel, Power BI & SQL Skills”</li>
+        <li>“Graduate in Electronics | Interested in IoT & Embedded Systems”</li>
+        <li>“Information Systems Fresher | Entry-Level IT Support Specialist”</li>
+        <li>“B.Sc. Computer Science | Passionate About Cloud Security”</li>
+        <li>“Graduate Web Developer | Skilled in MERN Stack Development”</li>
+        <li>“IT Fresher | Google Certified Data Analytics Professional (2025)”</li>
+        <li>“Aspiring AI Engineer | Knowledge of Deep Learning & Python”</li>
+        <li>“Graduate in Computer Applications | Focus on Software Testing”</li>
+        <li>“Entry-Level IT Professional | Strong in Problem Solving & DSA”</li>
+    </ol>
+
+    <h2>Pro Tips to Customize Your Headline</h2>
+    <p>Don’t just copy-paste these headlines—customize them for each application. Align your headline with the specific job description, and make sure it reflects your actual skills or certifications.</p>
+    <blockquote>💡 Bonus: Test your resume with a free ATS checker before submitting to ensure your headline and keywords are being picked up.</blockquote>
+
+    <h2>Final Thoughts</h2>
+    <p>As a fresher in tech, your resume headline is one of the most powerful ways to get noticed in 2025. Use these examples as inspiration, personalize them for your career goals, and you’ll increase your chances of landing that all-important interview.</p>
+`
+
+ },
 
 ];
