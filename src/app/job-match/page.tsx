@@ -4,27 +4,47 @@
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
 import { Header } from "@/components/shared/header";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { Briefcase, Loader2, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function JobMatchPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    useEffect(() => {
-        if (!loading && !user) {
-            router.push('/login');
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <div className="flex h-64 items-center justify-center">
+                    <Loader2 className="h-12 w-12 animate-spin" />
+                </div>
+            );
         }
-    }, [user, loading, router]);
 
-    if (loading || !user) {
-        return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin" />
-            </div>
-        );
+        if (!user) {
+            return (
+                <Card className="mt-12">
+                    <CardContent className="text-center py-12 text-muted-foreground">
+                        <Briefcase className="mx-auto h-12 w-12" />
+                        <h3 className="mt-4 text-lg font-semibold">Unlock the Job Match Analyzer</h3>
+                        <p className="mt-1 text-sm">Log in or create an account to analyze your job match and save your results.</p>
+                        <div className="flex gap-4 justify-center pt-4">
+                            <Button asChild>
+                                <Link href="/login"><LogIn /> Login</Link>
+                            </Button>
+                            <Button asChild variant="outline">
+                                <Link href="/signup"><UserPlus /> Sign Up</Link>
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        }
+
+        return <JobMatchAnalyzer />;
     }
 
   return (
@@ -44,7 +64,7 @@ export default function JobMatchPage() {
               </div>
             </div>
             <div className="mx-auto max-w-7xl mt-12">
-              <JobMatchAnalyzer />
+              {renderContent()}
             </div>
           </div>
         </div>
