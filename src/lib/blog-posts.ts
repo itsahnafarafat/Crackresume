@@ -144,7 +144,7 @@ export const blogPosts: BlogPost[] = [
 },
  {
   slug: 'ats-resume-headlines-for-freshers-tech-2025',
-title: '25+ ATS-Friendly Resume Headlines for Freshers in Tech (2025)',
+title: '25+ ATS-Friendly Resume Headlines for Freshers in Tech! (2025)',
 excerpt: 'Struggling to write the perfect resume headline? Discover 25+ ATS-optimized examples tailored for freshers in tech and learn how to make your application stand out in 2025.',
 author: 'Career Coach & ATS Optimization Expert',
 date: '2025-09-04',
