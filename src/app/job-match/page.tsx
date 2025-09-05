@@ -4,7 +4,7 @@
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
 import { Header } from "@/components/shared/header";
 import { useAuth } from "@/hooks/use-auth";
-import { Briefcase, Loader2, LogIn, UserPlus } from "lucide-react";
+import { ClipboardCheck, Loader2, LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -28,7 +28,7 @@ export default function JobMatchPage() {
             return (
                 <Card className="mt-12">
                     <CardContent className="text-center py-12 text-muted-foreground">
-                        <Briefcase className="mx-auto h-12 w-12" />
+                        <ClipboardCheck className="mx-auto h-12 w-12" />
                         <h3 className="mt-4 text-lg font-semibold">Unlock the Job Match Analyzer</h3>
                         <p className="mt-1 text-sm">Log in or create an account to analyze your job match and save your results.</p>
                         <div className="flex gap-4 justify-center pt-4">
