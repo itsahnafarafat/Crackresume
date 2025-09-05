@@ -35,6 +35,9 @@ const prompt = ai.definePrompt({
   name: 'jobMatchAnalyzerPrompt',
   input: {schema: JobMatchAnalyzerInputSchema},
   output: {schema: JobMatchAnalyzerOutputSchema},
+  config: {
+    temperature: 0.1,
+  },
   prompt: `You are an expert career coach and hiring manager. Your task is to analyze the provided resume against the job description and determine how good of a match it is.
 
 **Core Instructions:**
