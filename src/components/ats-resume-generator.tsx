@@ -15,7 +15,8 @@ import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, 
 import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
-import { firestore } from '@/lib/firebase';
+import { firestore, analytics } from '@/lib/firebase';
+import { logEvent } from "firebase/analytics";
 import Link from 'next/link';
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, TabStopType, TabStopPosition, ISpacingProperties, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
@@ -77,6 +78,10 @@ export function AtsResumeGenerator() {
         variant: 'destructive',
       });
       return;
+    }
+
+    if (analytics) {
+        logEvent(analytics, "resume_generated", { method: "AI" });
     }
 
     startTransition(async () => {

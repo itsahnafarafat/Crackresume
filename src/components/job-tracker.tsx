@@ -16,7 +16,8 @@ import type { Job } from '@/lib/types';
 import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp, limit as firestoreLimit } from 'firebase/firestore';
-import { firestore } from '@/lib/firebase';
+import { firestore, analytics } from '@/lib/firebase';
+import { logEvent } from "firebase/analytics";
 import Link from 'next/link';
 
 const APPLICATION_STATUSES: Job['status'][] = ['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected'];
@@ -130,6 +131,12 @@ export function JobTracker({ limit }: { limit?: number }) {
     }
   }
 
+  const handleJobClick = () => {
+    if (analytics) {
+      logEvent(analytics, "job_click", { source: "job_tracker" });
+    }
+  }
+
   return (
         <Card>
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -169,7 +176,7 @@ export function JobTracker({ limit }: { limit?: number }) {
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
                     <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
-                    <p className="mt-1 text-sm">Go to the Resume Tool to automatically track a job, or add one manually.</p>
+                    <p className="mt-1 text-sm">Use the Resume Tool to automatically track a job, or add one manually.</p>
                 </div>
             )}
             {!loading && user && jobs.length > 0 && (
@@ -186,7 +193,7 @@ export function JobTracker({ limit }: { limit?: number }) {
                 </TableHeader>
                 <TableBody>
                   {jobs.map((job) => (
-                    <TableRow key={job.id}>
+                    <TableRow key={job.id} onClick={handleJobClick}>
                       <TableCell className="font-medium">{job.companyName}</TableCell>
                       <TableCell>{job.jobTitle}</TableCell>
                       <TableCell className="hidden sm:table-cell">{formatDate(job.applicationDate)}</TableCell>

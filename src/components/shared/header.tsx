@@ -19,7 +19,13 @@ export function Header() {
             href="/"
             className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
         >
-            Home
+            Resume Tool
+        </Link>
+        <Link
+            href="/job-match"
+            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+        >
+            Job Match
         </Link>
         <Link
             href="/learning-hub"
