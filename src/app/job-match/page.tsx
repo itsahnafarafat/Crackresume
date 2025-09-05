@@ -1,9 +1,31 @@
 
+'use client';
+
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
 import { Header } from "@/components/shared/header";
+import { useAuth } from "@/hooks/use-auth";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function JobMatchPage() {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+
+    if (loading || !user) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin" />
+            </div>
+        );
+    }
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/40">
