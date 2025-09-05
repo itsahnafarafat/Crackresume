@@ -288,7 +288,7 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] md:max-w-[600px]">
+        <DialogContent className="sm:max-w-[425px] md:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
             <DialogTitle>{job ? 'Edit Job' : 'Add New Job'}</DialogTitle>
             </DialogHeader>

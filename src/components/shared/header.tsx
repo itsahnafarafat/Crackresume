@@ -13,35 +13,40 @@ import { Separator } from "../ui/separator";
 export function Header() {
   const { user, logout } = useAuth();
   
-  const navLinks = (
+  const navLinks = (closeSheet?: () => void) => (
     <>
         <Link
             href="/"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={closeSheet}
         >
             Resume Tool
         </Link>
         <Link
             href="/job-match"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={closeSheet}
         >
             Job Match
         </Link>
         <Link
             href="/learning-hub"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={closeSheet}
         >
             Learning Hub
         </Link>
         <Link
             href="/about"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={closeSheet}
         >
             About
         </Link>
         <Link
             href="/privacy"
-            className="flex items-center text-muted-foreground transition-colors hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            onClick={closeSheet}
         >
             Privacy Policy
         </Link>
@@ -58,7 +63,7 @@ export function Header() {
           </Link>
         </div>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium ml-auto">
-          {navLinks}
+          {navLinks()}
         </nav>
         <div className="flex items-center gap-2 ml-auto md:ml-6">
           {user ? (
@@ -104,34 +109,35 @@ export function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left">
-                <div className="mt-8 flex flex-col gap-6 text-lg font-medium">
-                  <SheetClose asChild>
+                <SheetClose asChild>
                     <Link href="/" className="flex items-center space-x-2">
                       <span className="font-bold text-xl">Crackresume</span>
                     </Link>
-                  </SheetClose>
-                  <Separator />
-                  <nav className="grid gap-6">
-                    <SheetClose asChild>{navLinks}</SheetClose>
-                  </nav>
-                   {!user && (
-                    <>
-                       <Separator />
-                        <div className="flex flex-col gap-4">
-                           <SheetClose asChild>
-                             <Button asChild variant="ghost">
-                                <Link href="/login">Login</Link>
-                            </Button>
-                           </SheetClose>
-                           <SheetClose asChild>
-                             <Button asChild>
-                                <Link href="/signup">Sign Up</Link>
-                            </Button>
-                           </SheetClose>
-                        </div>
-                    </>
-                    )}
-                </div>
+                </SheetClose>
+                <Separator className="my-4" />
+                <nav className="grid gap-4 text-base font-medium">
+                  {navLinks(() => {
+                    const closeButton = document.querySelector('[data-radix-dialog-close]');
+                    if (closeButton instanceof HTMLElement) {
+                      closeButton.click();
+                    }
+                  })}
+                </nav>
+                <Separator className="my-4" />
+                {!user && (
+                    <div className="grid gap-4">
+                       <SheetClose asChild>
+                         <Button asChild variant="ghost">
+                            <Link href="/login">Login</Link>
+                        </Button>
+                       </SheetClose>
+                       <SheetClose asChild>
+                         <Button asChild>
+                            <Link href="/signup">Sign Up</Link>
+                        </Button>
+                       </SheetClose>
+                    </div>
+                )}
               </SheetContent>
             </Sheet>
         </div>
