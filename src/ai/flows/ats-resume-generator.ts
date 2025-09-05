@@ -75,10 +75,12 @@ Previous Resume Text:
 
 Previous Score: {{previousAttempt.score}}
 {{#if previousAttempt.feedback}}
-Previous Feedback: {{previousAttempt.feedback}}
-{{/if}}
+User Feedback for this attempt: "{{previousAttempt.feedback}}"
 
+You MUST address this feedback specifically and incorporate it into the new version. For example, if the feedback is "Emphasize my project management skills," you MUST strengthen the project management aspects of the resume. The new structured resume MUST be demonstrably better and reflect the user's feedback.
+{{else}}
 You MUST make significant improvements to the resume to increase the score. Analyze the previous attempt and its shortcomings. Focus on incorporating more keywords, strengthening the action verbs, and adding more quantifiable achievements to achieve a higher ATS score. The new structured resume must be demonstrably better.
+{{/if}}
 {{/if}}
 
 Do not invent new work experience. Base the rewritten resume entirely on the content of the original resume and the target job description.

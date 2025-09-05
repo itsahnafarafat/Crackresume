@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star } from 'lucide-react';
+import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star, MessageSquareQuote } from 'lucide-react';
 import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
@@ -29,6 +29,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Input } from './ui/input';
 
 const motivationalQuotes = [
     "Crafting your story, one keyword at a time...",
@@ -44,6 +45,7 @@ const motivationalQuotes = [
 export function AtsResumeGenerator() {
   const [resumeContent, setResumeContent] = useState('');
   const [jobDescription, setJobDescription] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<GenerateAtsFriendlyResumeOutput | null>(null);
   const [motivationalMessage, setMotivationalMessage] = useState(motivationalQuotes[0]);
@@ -85,7 +87,6 @@ export function AtsResumeGenerator() {
     }
 
     startTransition(async () => {
-      setResult(null);
       const isRegeneration = !!result;
       
       try {
@@ -96,9 +97,12 @@ export function AtsResumeGenerator() {
               ? {
                   resume: result.atsFriendlyResumeText,
                   score: result.atsScore,
+                  feedback: feedback || undefined,
                 }
               : undefined,
           };
+          
+        setResult(null);
 
         if (user) {
             const [atsResult, jobDetails] = await Promise.all([
@@ -119,20 +123,24 @@ export function AtsResumeGenerator() {
               jobDescription: jobDescription,
             };
             
-            await addDoc(collection(firestore, 'jobs'), newJob);
+            if (!isRegeneration) {
+                await addDoc(collection(firestore, 'jobs'), newJob);
             
-            window.dispatchEvent(new Event('jobAdded'));
-            
-            if (jobDetails.companyName && jobDetails.jobTitle) {
-                 toast({
-                    title: 'Job Tracked!',
-                    description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
-                });
+                window.dispatchEvent(new Event('jobAdded'));
+                
+                if (jobDetails.companyName && jobDetails.jobTitle) {
+                     toast({
+                        title: 'Job Tracked!',
+                        description: `${jobDetails.jobTitle} at ${jobDetails.companyName} has been added to your list.`,
+                    });
+                } else {
+                    toast({
+                        title: 'Job Tracked!',
+                        description: 'We saved the job, but please add the company name and title manually.',
+                    });
+                }
             } else {
-                toast({
-                    title: 'Job Tracked!',
-                    description: 'We saved the job, but please add the company name and title manually.',
-                });
+                 toast({ title: 'Resume Regenerated!', description: 'Your resume has been updated with your feedback.' });
             }
 
         } else {
@@ -400,10 +408,23 @@ export function AtsResumeGenerator() {
                                 className="h-[400px] bg-muted/50 text-sm"
                             />
                         </div>
-                        <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
-                            {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                            Regenerate & Improve
-                        </Button>
+                        <div className="space-y-4 rounded-lg border bg-background p-4">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <MessageSquareQuote className="w-5 h-5 text-primary" /> Want an Even Better Version?
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Provide specific feedback below to guide the AI. For example: "Make my leadership experience more prominent" or "Add more numbers to my achievements."
+                            </p>
+                            <Input 
+                                placeholder="Enter your feedback here..." 
+                                value={feedback}
+                                onChange={(e) => setFeedback(e.target.value)}
+                            />
+                            <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !jobDescription} className="w-full">
+                                {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
+                                Regenerate with Feedback
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
