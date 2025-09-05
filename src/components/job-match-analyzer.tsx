@@ -96,7 +96,7 @@ export function JobMatchAnalyzer() {
              <CardDescription>
                 Paste the job description to analyze your match.
             </CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent>
             <Textarea
               placeholder="Paste the target job description here..."
