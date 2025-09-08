@@ -8,12 +8,14 @@ import { firestore } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import type { Job } from '@/lib/types';
 import { Header } from '@/components/shared/header';
-import { Loader2, Wand2, Clipboard as ClipboardIcon, FileText, Briefcase } from 'lucide-react';
+import { Loader2, Wand2, Clipboard as ClipboardIcon, FileText, Briefcase, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { generateCoverLetter } from '@/ai/flows/cover-letter-generator';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
 
 export default function CoverLetterPage() {
   const { user, loading: authLoading } = useAuth();
@@ -97,6 +99,34 @@ export default function CoverLetterPage() {
     });
   };
 
+  const handleDownloadDocx = async () => {
+    if (!coverLetter) return;
+
+    const paragraphs = coverLetter.split('\n').map(text => 
+        new Paragraph({
+            children: [new TextRun(text)],
+            spacing: { after: 120 }
+        })
+    );
+
+    const doc = new Document({
+        sections: [{
+            children: paragraphs
+        }],
+         styles: {
+            default: {
+                document: {
+                    run: { font: "Calibri", size: 22 },
+                },
+            },
+        }
+    });
+
+    Packer.toBlob(doc).then(blob => {
+        saveAs(blob, 'Crackresume-Cover-Letter.docx');
+    });
+  };
+
   if (loading || authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -166,9 +196,14 @@ export default function CoverLetterPage() {
                                 className="h-96 bg-muted/50 text-sm"
                             />
                             {coverLetter && (
-                                <Button onClick={() => copyToClipboard(coverLetter)} className="w-full">
-                                    <ClipboardIcon className="mr-2 h-4 w-4" /> Copy Cover Letter
-                                </Button>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <Button onClick={() => copyToClipboard(coverLetter)} className="w-full">
+                                        <ClipboardIcon className="mr-2 h-4 w-4" /> Copy Cover Letter
+                                    </Button>
+                                    <Button onClick={handleDownloadDocx} className="w-full">
+                                        <Download className="mr-2 h-4 w-4" /> Download DOCX
+                                    </Button>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
