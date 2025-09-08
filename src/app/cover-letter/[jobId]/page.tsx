@@ -149,9 +149,9 @@ export default function CoverLetterPage() {
                 </p>
             </div>
             
-            <div className="mx-auto max-w-7xl mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Column: Data */}
-                <div className="space-y-8">
+            <div className="mx-auto max-w-7xl mt-12 space-y-8">
+                {/* Top Row: Data */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Briefcase/> Job Description</CardTitle>
@@ -161,7 +161,7 @@ export default function CoverLetterPage() {
                              <Textarea
                                 readOnly
                                 value={job?.jobDescription || 'No job description available.'}
-                                className="h-64 bg-muted/50 text-sm"
+                                className="h-96 bg-muted/50 text-sm"
                             />
                         </CardContent>
                     </Card>
@@ -174,13 +174,13 @@ export default function CoverLetterPage() {
                             <Textarea
                                 readOnly
                                 value={user?.resumeContent || 'No resume saved. Please add one in your dashboard.'}
-                                className="h-64 bg-muted/50 text-sm"
+                                className="h-96 bg-muted/50 text-sm"
                             />
                         </CardContent>
                     </Card>
                 </div>
-                 {/* Right Column: Generator */}
-                <div className="sticky top-20">
+                 {/* Bottom Row: Generator */}
+                <div>
                     <Card>
                          <CardHeader>
                             <CardTitle>Your Custom Cover Letter</CardTitle>
@@ -192,12 +192,12 @@ export default function CoverLetterPage() {
                                 {isPending ? 'Generating...' : 'Generate Cover Letter'}
                             </Button>
                             <Textarea
-                                readOnly
+                                readOnly={isPending}
                                 value={coverLetter}
-                                placeholder="Your generated cover letter will appear here..."
+                                placeholder={isPending ? "Generating your cover letter..." : "Your generated cover letter will appear here..."}
                                 className="h-96 bg-muted/50 text-sm"
                             />
-                            {coverLetter && (
+                            {coverLetter && !isPending && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <Button onClick={() => copyToClipboard(coverLetter)} className="w-full">
                                         <ClipboardIcon className="mr-2 h-4 w-4" /> Copy Letter
