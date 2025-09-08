@@ -59,7 +59,7 @@ The output MUST be a structured JSON object adhering to the provided schema.
 1.  **Extract and Structure:**
     *   Begin by extracting the candidate's personal details (Name, Email, Phone, LinkedIn).
     *   Structure the resume into standard, ATS-friendly sections: "Professional Summary", "Work Experience", "Education", "Skills".
-    *   For 'Work Experience' and 'Education', each entry MUST have a 'subheading' (Job Title/Degree) and a corresponding 'detail' (Company, Location / University, Location). The date range for each entry MUST be included in the 'subheading' and separated by '||' for later parsing (e.g., "Senior Software Engineer || May 2020 - Present").
+    *   For 'Work Experience' and 'Education', each entry MUST have a 'subheading' (Job Title/Degree) and a corresponding 'detail' (Company & Location / University & Location). The date range should be included.
     *   For the 'Skills' section, group related skills into a single 'bullet' element, separated by commas, and add a label (e.g., "Languages: JavaScript, Python, Java").
 
 2.  **Content Optimization (This is crucial):**
@@ -85,12 +85,46 @@ You MUST make significant improvements to the resume to increase the score. Anal
 
 Do not invent new work experience. Base the rewritten resume entirely on the content of the original resume and the target job description.
 
-After creating the structured resume, you MUST provide a complete JSON object that includes:
-- **atsFriendlyResume**: The structured JSON version of the resume.
-- **atsFriendlyResumeText**: A plain text version of the resume, suitable for display. Combine all structured content into a single string with appropriate line breaks.
-- **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices. This score should be higher if regenerating.
-- **scoreAnalysis**: A brief, one-sentence analysis of the score.
-- **keyImprovements**: A bulleted list of the most important improvements you made.
+**Example of the Final JSON Output Structure:**
+
+\`\`\`json
+{
+  "atsFriendlyResume": {
+    "personalDetails": {
+      "name": "Jane Doe",
+      "email": "jane.doe@email.com",
+      "phone": "123-456-7890",
+      "linkedin": "linkedin.com/in/janedoe"
+    },
+    "sections": [
+      {
+        "heading": "Professional Summary",
+        "content": [
+          { "type": "paragraph", "text": "A brief, impactful summary..." }
+        ]
+      },
+      {
+        "heading": "Work Experience",
+        "content": [
+          { "type": "subheading", "text": "Senior Software Engineer, Tech Corp | Jan 2020 - Present" },
+          { "type": "detail", "text": "San Francisco, CA" },
+          { "type": "bullet", "text": "Engineered a new feature that increased user engagement by 15%." }
+        ]
+      }
+    ]
+  },
+  "atsFriendlyResumeText": "Jane Doe\\n123-456-7890 | jane.doe@email.com...",
+  "atsScore": 92,
+  "scoreAnalysis": "Excellent match, highly optimized.",
+  "keyImprovements": [
+    "Integrated 15+ keywords from the job description.",
+    "Quantified achievements with specific metrics (e.g., 'increased by 15%').",
+    "Strengthened the professional summary to align with the role's core requirements."
+  ]
+}
+\`\`\`
+
+After creating the structured resume, you MUST provide a complete JSON object in the format shown above, including all required fields: **atsFriendlyResume**, **atsFriendlyResumeText**, **atsScore**, **scoreAnalysis**, and **keyImprovements**.
 
 Original Resume Content:
 {{{resumeContent}}}
