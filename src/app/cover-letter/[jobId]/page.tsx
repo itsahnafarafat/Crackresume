@@ -28,12 +28,17 @@ export default function CoverLetterPage() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [coverLetter, setCoverLetter] = useState<string>('');
+  const [resumeContent, setResumeContent] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       router.push('/login');
       return;
+    }
+
+    if (user.resumeContent) {
+        setResumeContent(user.resumeContent);
     }
 
     if (!jobId || typeof jobId !== 'string') {
@@ -65,10 +70,10 @@ export default function CoverLetterPage() {
   }, [user, authLoading, jobId, router, toast]);
 
   const handleGenerate = () => {
-    if (!user?.resumeContent || !job?.jobDescription) {
+    if (!resumeContent || !job?.jobDescription) {
         toast({
             title: "Missing Information",
-            description: "A saved resume and job description are required to generate a cover letter.",
+            description: "A resume and job description are required to generate a cover letter.",
             variant: 'destructive',
         });
         return;
@@ -77,7 +82,7 @@ export default function CoverLetterPage() {
     startTransition(async () => {
         try {
             const result = await generateCoverLetter({
-                resumeContent: user.resumeContent!,
+                resumeContent: resumeContent,
                 jobDescription: job.jobDescription!,
                 companyName: job.companyName,
                 jobTitle: job.jobTitle,
@@ -168,13 +173,14 @@ export default function CoverLetterPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><FileText/> Your Resume</CardTitle>
-                             <CardDescription>This will be used to generate the cover letter.</CardDescription>
+                             <CardDescription>Your saved resume is pre-filled, or you can paste one below.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Textarea
-                                readOnly
-                                value={user?.resumeContent || 'No resume saved. Please add one in your dashboard.'}
-                                className="h-96 bg-muted/50 text-sm"
+                                value={resumeContent}
+                                onChange={(e) => setResumeContent(e.target.value)}
+                                placeholder={'Your saved resume will appear here, or you can paste a new one.'}
+                                className="h-96 text-sm"
                             />
                         </CardContent>
                     </Card>
@@ -187,7 +193,7 @@ export default function CoverLetterPage() {
                             <CardDescription>Click the button below to create your letter. It will appear in the text box.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                             <Button onClick={handleGenerate} disabled={isPending || !user?.resumeContent || !job?.jobDescription} size="lg" className="w-full">
+                             <Button onClick={handleGenerate} disabled={isPending || !resumeContent || !job?.jobDescription} size="lg" className="w-full">
                                 {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
                                 {isPending ? 'Generating...' : 'Generate Cover Letter'}
                             </Button>
