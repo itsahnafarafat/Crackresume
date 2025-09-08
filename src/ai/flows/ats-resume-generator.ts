@@ -85,7 +85,7 @@ You MUST make significant improvements to the resume to increase the score. Anal
 
 Do not invent new work experience. Base the rewritten resume entirely on the content of the original resume and the target job description.
 
-After creating the structured resume, you MUST provide:
+After creating the structured resume, you MUST provide a complete JSON object that includes:
 - **atsFriendlyResume**: The structured JSON version of the resume.
 - **atsFriendlyResumeText**: A plain text version of the resume, suitable for display. Combine all structured content into a single string with appropriate line breaks.
 - **atsScore**: A score from 0 to 100 indicating how well the rewritten resume aligns with the job description and ATS best practices. This score should be higher if regenerating.
