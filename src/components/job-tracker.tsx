@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Job } from '@/lib/types';
-import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn, ArrowRight } from 'lucide-react';
+import { Briefcase, Edit, PlusCircle, Trash2, Loader2, UserPlus, LogIn, ArrowRight, FileText } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, addDoc, orderBy, Timestamp, limit as firestoreLimit } from 'firebase/firestore';
 import { firestore, analytics } from '@/lib/firebase';
@@ -209,7 +209,12 @@ export function JobTracker({ limit }: { limit?: number }) {
                             </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right space-x-1">
+                         <Button asChild variant="outline" size="sm" disabled={!user?.resumeContent}>
+                            <Link href={`/cover-letter/${job.id}`}>
+                                <FileText className="mr-2 h-4 w-4" /> Cover Letter
+                            </Link>
+                         </Button>
                          <AddEditJobDialog job={job} onSave={(data) => handleUpdateJob({ ...data, id: job.id })} triggerButton={
                             <Button variant="ghost" size="icon">
                                 <Edit className="h-4 w-4" />
