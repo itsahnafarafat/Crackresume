@@ -192,7 +192,7 @@ export default function CoverLetterPage() {
                                 {isPending ? 'Generating...' : 'Generate Cover Letter'}
                             </Button>
                             <Textarea
-                                readOnly={isPending}
+                                readOnly
                                 value={coverLetter}
                                 placeholder={isPending ? "Generating your cover letter..." : "Your generated cover letter will appear here..."}
                                 className="h-96 bg-muted/50 text-sm"
