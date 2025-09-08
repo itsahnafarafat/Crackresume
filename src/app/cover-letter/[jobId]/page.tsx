@@ -154,7 +154,8 @@ export default function CoverLetterPage() {
                 <div className="space-y-8">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2"><Briefcase/> Job Details</CardTitle>
+                            <CardTitle className="flex items-center gap-2"><Briefcase/> Job Description</CardTitle>
+                             <CardDescription>{job?.jobTitle}</CardDescription>
                         </CardHeader>
                         <CardContent>
                              <Textarea
@@ -167,6 +168,7 @@ export default function CoverLetterPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><FileText/> Your Resume</CardTitle>
+                             <CardDescription>This will be used to generate the cover letter.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Textarea
@@ -178,16 +180,16 @@ export default function CoverLetterPage() {
                     </Card>
                 </div>
                  {/* Right Column: Generator */}
-                <div className="space-y-8">
-                    <Card className="sticky top-20">
+                <div className="sticky top-20">
+                    <Card>
                          <CardHeader>
                             <CardTitle>Your Custom Cover Letter</CardTitle>
-                            <CardDescription>Click generate to create your cover letter. It will appear below.</CardDescription>
+                            <CardDescription>Click the button below to create your letter. It will appear in the text box.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <Button onClick={handleGenerate} disabled={isPending || !user?.resumeContent || !job?.jobDescription} size="lg" className="w-full">
                                 {isPending ? <Loader2 className="animate-spin" /> : <Wand2 />}
-                                Generate Cover Letter
+                                {isPending ? 'Generating...' : 'Generate Cover Letter'}
                             </Button>
                             <Textarea
                                 readOnly
@@ -198,17 +200,16 @@ export default function CoverLetterPage() {
                             {coverLetter && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <Button onClick={() => copyToClipboard(coverLetter)} className="w-full">
-                                        <ClipboardIcon className="mr-2 h-4 w-4" /> Copy Cover Letter
+                                        <ClipboardIcon className="mr-2 h-4 w-4" /> Copy Letter
                                     </Button>
                                     <Button onClick={handleDownloadDocx} className="w-full">
-                                        <Download className="mr-2 h-4 w-4" /> Download DOCX
+                                        <Download className="mr-2 h-4 w-4" /> Download .DOCX
                                     </Button>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 </div>
-
             </div>
         </div>
       </main>
