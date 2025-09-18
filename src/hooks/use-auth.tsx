@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignUpFormData) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserResume: (resumeContent: string) => Promise<void>;
 }
@@ -70,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
+      await sendEmailVerification(newUser);
+
       await setDoc(doc(firestore, `users/${newUser.uid}`), {
           uid: newUser.uid,
           email: newUser.email,
@@ -79,12 +82,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           resumeContent: '',
       });
       router.push('/');
-      toast({ title: "Sign Up Successful", description: "Welcome to Crackresume!"});
+      toast({ title: "Sign Up Successful", description: "Welcome to Crackresume! Please check your email to verify your account."});
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({ title: "Sign Up Failed", description: error.message, variant: 'destructive' });
     }
   };
+
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        const userCredential = await signInWithPopup(auth, provider);
+        const googleUser = userCredential.user;
+
+        const userDocRef = doc(firestore, `users/${googleUser.uid}`);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+                uid: googleUser.uid,
+                email: googleUser.email,
+                displayName: googleUser.displayName,
+                photoURL: googleUser.photoURL,
+                createdAt: new Date().toISOString(),
+                isAdmin: false,
+                resumeContent: '',
+            });
+        }
+        
+        router.push('/');
+        toast({ title: "Sign In Successful", description: "Welcome to Crackresume!"});
+
+    } catch (error: any) {
+        console.error("Google sign-in error:", error);
+        toast({ title: "Google Sign-In Failed", description: error.message, variant: 'destructive' });
+    }
+  };
+
 
   const logout = async () => {
     try {
@@ -112,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, login, signup, logout, updateUserResume };
+  const value = { user, loading, login, signup, logout, updateUserResume, signInWithGoogle };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
