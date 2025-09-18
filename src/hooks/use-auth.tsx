@@ -2,18 +2,17 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import type { LoginFormData, SignUpFormData, UserData } from '@/lib/types';
+import type { UserData } from '@/lib/types';
 import { useToast } from './use-toast';
 
 interface AuthContextType {
   user: UserData | null;
   loading: boolean;
-  login: (data: LoginFormData) => Promise<void>;
-  signup: (data: SignUpFormData) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserResume: (resumeContent: string) => Promise<void>;
 }
@@ -28,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser && firebaseUser.emailVerified) {
+      if (firebaseUser) {
         const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
         
         const unsubFromDoc = onSnapshot(userDocRef, (userDoc) => {
@@ -55,67 +54,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async ({ email, password }: LoginFormData) => {
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
-      if (!userCredential.user.emailVerified) {
-        await signOut(auth); // Sign out the user immediately
-        toast({
-            title: "Verification Required",
-            description: "Please check your inbox and verify your email address before logging in.",
-            variant: 'destructive',
-            duration: 5000,
+      const result = await signInWithPopup(auth, provider);
+      const googleUser = result.user;
+
+      // Check if user exists in Firestore
+      const userDocRef = doc(firestore, 'users', googleUser.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // Create a new user document if it's their first time
+        await setDoc(userDocRef, {
+          uid: googleUser.uid,
+          email: googleUser.email,
+          displayName: googleUser.displayName,
+          photoURL: googleUser.photoURL,
+          createdAt: serverTimestamp(),
+          resumeContent: '',
+          isAdmin: false,
         });
-        return;
       }
       
       router.push('/');
       toast({ title: "Login Successful", description: "Welcome back!"});
     } catch (error: any) {
-      console.error("Login error:", error);
-      
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        toast({ title: "Login Failed", description: "Invalid email or password.", variant: 'destructive' });
-      } else {
-        toast({ title: "Login Failed", description: error.message, variant: 'destructive' });
-      }
-    }
-  };
-
-  const signup = async ({ email, password, name }: SignUpFormData) => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const newUser = userCredential.user;
-      
-      await sendEmailVerification(newUser);
-
-      await setDoc(doc(firestore, `users/${newUser.uid}`), {
-          uid: newUser.uid,
-          email: newUser.email,
-          displayName: name,
-          createdAt: new Date().toISOString(),
-          isAdmin: false,
-          resumeContent: '',
-      });
-      
-      // Sign the user out so they have to verify their email before logging in
-      await signOut(auth);
-
-      router.push('/login');
-      toast({ 
-          title: "Sign Up Successful!", 
-          description: "Please check your inbox to verify your email address before logging in.",
-          duration: 10000 
-      });
-
-    } catch (error: any) {
-      console.error("Signup error:", error);
-       if (error.code === 'auth/email-already-in-use') {
-         toast({ title: "Sign Up Failed", description: "An account with this email already exists.", variant: 'destructive' });
-      } else {
-        toast({ title: "Sign Up Failed", description: "An unexpected error occurred. Please try again.", variant: 'destructive' });
-      }
+      console.error("Google Sign-In error:", error);
+      toast({ title: "Sign-In Failed", description: "Could not sign in with Google. Please try again.", variant: 'destructive' });
     }
   };
 
@@ -145,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, login, signup, logout, updateUserResume };
+  const value = { user, loading, signInWithGoogle, logout, updateUserResume };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

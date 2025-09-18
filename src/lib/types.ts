@@ -46,30 +46,6 @@ export const ManagePostOutputSchema = z.object({
 export type ManagePostOutput = z.infer<typeof ManagePostOutputSchema>;
 
 
-export const loginFormSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email.",
-  }),
-  password: z.string().min(1, {
-    message: "Password is required.",
-  }),
-});
-
-export const signUpFormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email.",
-  }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
-});
-
-export type LoginFormData = z.infer<typeof loginFormSchema>;
-export type SignUpFormData = z.infer<typeof signUpFormSchema>;
-
 const PersonalDetailsSchema = z.object({
     name: z.string().describe('Full name of the candidate.'),
     email: z.string().optional().describe('Email address.'),
