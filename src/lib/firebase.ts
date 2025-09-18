@@ -1,10 +1,11 @@
+
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+  apiKey: "YOUR_API_KEY",
   authDomain: "resuai-qodve.firebaseapp.com",
   projectId: "resuai-qodve",
   storageBucket: "resuai-qodve.appspot.com",
