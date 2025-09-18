@@ -1,6 +1,6 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeAuth, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
@@ -15,11 +15,16 @@ const firebaseConfig = {
 
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// Use initializeAuth instead of getAuth
+const auth = initializeAuth(app, {
+  persistence: browserLocalPersistence
+});
+
 const firestore = getFirestore(app);
 
-// ✅ Analytics (only initialize in browser, not on server)
+// Analytics (only initialize in browser, not on server)
 let analytics: ReturnType<typeof getAnalytics> | null = null;
 if (typeof window !== "undefined") {
   isSupported().then((yes) => {
