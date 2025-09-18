@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error("Login error:", error);
       
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
         toast({ title: "Login Failed", description: "Invalid email or password.", variant: 'destructive' });
       } else {
         toast({ title: "Login Failed", description: error.message, variant: 'destructive' });
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
        if (error.code === 'auth/email-already-in-use') {
          toast({ title: "Sign Up Failed", description: "An account with this email already exists.", variant: 'destructive' });
       } else {
-        toast({ title: "Sign Up Failed", description: error.message, variant: 'destructive' });
+        toast({ title: "Sign Up Failed", description: "An unexpected error occurred. Please try again.", variant: 'destructive' });
       }
     }
   };

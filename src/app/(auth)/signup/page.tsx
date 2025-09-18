@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
 import { signUpFormSchema, type SignUpFormData } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -15,7 +14,6 @@ import { useForm } from "react-hook-form";
 
 export default function SignUpPage() {
     const { signup } = useAuth();
-    const { toast } = useToast();
 
     const form = useForm<SignUpFormData>({
         resolver: zodResolver(signUpFormSchema),
@@ -27,15 +25,7 @@ export default function SignUpPage() {
     });
 
     const onSubmit = async (data: SignUpFormData) => {
-        try {
-            await signup(data);
-        } catch (error) {
-            toast({
-                title: "Sign Up Failed",
-                description: "An unexpected error occurred. Please try again.",
-                variant: "destructive",
-            });
-        }
+        await signup(data);
     };
 
     return (
