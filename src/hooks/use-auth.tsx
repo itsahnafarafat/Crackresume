@@ -88,11 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const newUser = userCredential.user;
       
-      const actionCodeSettings = {
-          url: `${window.location.origin}/login`,
-          handleCodeInApp: true,
-      };
-      await sendEmailVerification(newUser, actionCodeSettings);
+      await sendEmailVerification(newUser);
 
       await setDoc(doc(firestore, `users/${newUser.uid}`), {
           uid: newUser.uid,
