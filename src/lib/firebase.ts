@@ -5,12 +5,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "resuai-qodve.firebaseapp.com",
-  projectId: "resuai-qodve",
-  storageBucket: "resuai-qodve.appspot.com",
-  messagingSenderId: "258754616939",
-  appId: "1:258754616939:web:387aa3472eadd3c3d05b2e"
+  "projectId": "resuai-qodve",
+  "appId": "1:258754616939:web:387aa3472eadd3c3d05b2e",
+  "storageBucket": "resuai-qodve.appspot.com",
+  "apiKey": "AIzaSyB6PgSGzpxbWEhNs9eFHP1iIX9n6ZvuVgE",
+  "authDomain": "resuai-qodve.firebaseapp.com",
+  "messagingSenderId": "258754616939"
 };
 
 
