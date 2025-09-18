@@ -4,13 +4,14 @@ import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
-  projectId: "resuai-qodve",
-  appId: "1:258754616939:web:387aa3472eadd3c3d05b2e",
-  storageBucket: "resuai-qodve.firebasestorage.app",
   apiKey: "AIzaSyB6PgSGzpxbWEhNs9eFHP1iIX9n6ZvuVgE",
   authDomain: "resuai-qodve.firebaseapp.com",
-  messagingSenderId: "258754616939"
+  projectId: "resuai-qodve",
+  storageBucket: "resuai-qodve.appspot.com",
+  messagingSenderId: "258754616939",
+  appId: "1:258754616939:web:387aa3472eadd3c3d05b2e"
 };
+
 
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
