@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from 'firebase/auth';
+import { onAuthStateChanged, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendEmailVerification } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
 import { doc, setDoc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,6 @@ interface AuthContextType {
   loading: boolean;
   login: (data: LoginFormData) => Promise<void>;
   signup: (data: SignUpFormData) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserResume: (resumeContent: string) => Promise<void>;
 }
@@ -29,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
+      if (firebaseUser && firebaseUser.emailVerified) {
         const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
         
         const unsubFromDoc = onSnapshot(userDocRef, (userDoc) => {
@@ -58,12 +57,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async ({ email, password }: LoginFormData) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth); // Sign out the user immediately
+        toast({
+            title: "Verification Required",
+            description: "Please check your inbox and verify your email address before logging in.",
+            variant: 'destructive',
+            duration: 5000,
+        });
+        return;
+      }
+      
       router.push('/');
-       toast({ title: "Login Successful", description: "Welcome back!"});
+      toast({ title: "Login Successful", description: "Welcome back!"});
     } catch (error: any) {
       console.error("Login error:", error);
-      toast({ title: "Login Failed", description: error.message, variant: 'destructive' });
+      
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        toast({ title: "Login Failed", description: "Invalid email or password.", variant: 'destructive' });
+      } else {
+        toast({ title: "Login Failed", description: error.message, variant: 'destructive' });
+      }
     }
   };
 
@@ -81,44 +97,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAdmin: false,
           resumeContent: '',
       });
-      router.push('/');
-      toast({ title: "Sign Up Successful", description: "Welcome to Crackresume! Please check your email to verify your account."});
+      
+      // Sign the user out so they have to verify their email before logging in
+      await signOut(auth);
+
+      router.push('/login');
+      toast({ 
+          title: "Sign Up Successful!", 
+          description: "Please check your inbox to verify your email address before logging in.",
+          duration: 10000 
+      });
+
     } catch (error: any) {
       console.error("Signup error:", error);
-      toast({ title: "Sign Up Failed", description: error.message, variant: 'destructive' });
+       if (error.code === 'auth/email-already-in-use') {
+         toast({ title: "Sign Up Failed", description: "An account with this email already exists.", variant: 'destructive' });
+      } else {
+        toast({ title: "Sign Up Failed", description: error.message, variant: 'destructive' });
+      }
     }
   };
-
-  const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-        const userCredential = await signInWithPopup(auth, provider);
-        const googleUser = userCredential.user;
-
-        const userDocRef = doc(firestore, `users/${googleUser.uid}`);
-        const userDoc = await getDoc(userDocRef);
-
-        if (!userDoc.exists()) {
-            await setDoc(userDocRef, {
-                uid: googleUser.uid,
-                email: googleUser.email,
-                displayName: googleUser.displayName,
-                photoURL: googleUser.photoURL,
-                createdAt: new Date().toISOString(),
-                isAdmin: false,
-                resumeContent: '',
-            });
-        }
-        
-        router.push('/');
-        toast({ title: "Sign In Successful", description: "Welcome to Crackresume!"});
-
-    } catch (error: any) {
-        console.error("Google sign-in error:", error);
-        toast({ title: "Google Sign-In Failed", description: error.message, variant: 'destructive' });
-    }
-  };
-
 
   const logout = async () => {
     try {
@@ -146,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, login, signup, logout, updateUserResume, signInWithGoogle };
+  const value = { user, loading, login, signup, logout, updateUserResume };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
