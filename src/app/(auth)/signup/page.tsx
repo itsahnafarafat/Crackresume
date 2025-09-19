@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 const GoogleIcon = () => (
   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
@@ -30,15 +30,16 @@ const GoogleIcon = () => (
 
 
 export default function SignUpPage() {
-    const { signInWithGoogle, loading } = useAuth();
-    const [isPending, setIsPending] = useState(false);
+    const { signInWithGoogle, loading: authLoading } = useAuth();
+    const [isPending, startTransition] = useTransition();
 
     const handleGoogleSignIn = async () => {
-        setIsPending(true);
-        // signInWithGoogle will trigger a redirect, so the promise may not resolve here.
-        // The logic in useAuth hook will handle the result after redirect.
-        await signInWithGoogle();
+        startTransition(async () => {
+            await signInWithGoogle();
+        });
     };
+
+    const isLoading = isPending || authLoading;
 
     return (
         <Card className="w-full max-w-md">
@@ -47,13 +48,13 @@ export default function SignUpPage() {
                 <CardDescription>Join Crackresume with a single click.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending || loading}>
-                    {isPending || loading ? (
+                <Button onClick={handleGoogleSignIn} className="w-full" disabled={isLoading}>
+                    {isLoading ? (
                         <Loader2 className="animate-spin mr-2" />
                     ) : (
                         <GoogleIcon />
                     )}
-                    {isPending || loading ? 'Redirecting...' : 'Sign up with Google'}
+                    {isLoading ? 'Signing up...' : 'Sign up with Google'}
                 </Button>
             </CardContent>
         </Card>

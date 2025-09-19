@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -26,42 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    const handleRedirect = async () => {
-        try {
-            const result = await getRedirectResult(auth);
-            if (result) {
-                setLoading(true); // Start loading while we process the redirect
-                const googleUser = result.user;
-                const userDocRef = doc(firestore, 'users', googleUser.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                if (!userDoc.exists()) {
-                    await setDoc(userDocRef, {
-                        uid: googleUser.uid,
-                        email: googleUser.email,
-                        displayName: googleUser.displayName,
-                        photoURL: googleUser.photoURL,
-                        createdAt: serverTimestamp(),
-                        resumeContent: '',
-                        isAdmin: false,
-                    });
-                }
-                router.push('/dashboard');
-                toast({ title: "Login Successful", description: "Welcome!"});
-            }
-        } catch (error: any) {
-            console.error("Google Sign-In redirect error:", error);
-            if (error.code !== 'auth/web-storage-unsupported') {
-               toast({ title: "Sign-In Failed", description: "Could not complete sign in with Google. Please try again.", variant: 'destructive' });
-            }
-        } finally {
-            // This is important to stop loading even if redirect result is null or fails
-            setLoading(false);
-        }
-    }
-    
-    handleRedirect();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {
@@ -78,20 +42,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router, toast]);
+  }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // No need for a try-catch here for signInWithRedirect, as errors are handled by getRedirectResult
-    await signInWithRedirect(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const googleUser = result.user;
+
+      const userDocRef = doc(firestore, 'users', googleUser.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          uid: googleUser.uid,
+          email: googleUser.email,
+          displayName: googleUser.displayName,
+          photoURL: googleUser.photoURL,
+          createdAt: serverTimestamp(),
+          resumeContent: '',
+          isAdmin: false,
+        });
+      }
+      
+      router.push('/dashboard');
+      toast({ title: "Login Successful", description: "Welcome!" });
+
+    } catch (error: any) {
+      console.error("Google Sign-In error:", error);
+      toast({ title: "Sign-In Failed", description: error.message, variant: 'destructive' });
+    }
   };
 
   const logout = async () => {
     try {
       await signOut(auth);
       router.push('/login');
-    } catch (error: any)
-{
+    } catch (error: any) {
       console.error("Logout error:", error);
       toast({ title: "Logout Failed", description: error.message, variant: 'destructive' });
     }
