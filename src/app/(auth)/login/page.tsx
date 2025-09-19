@@ -30,18 +30,19 @@ const GoogleIcon = () => (
 
 
 export default function LoginPage() {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, loading } = useAuth();
   const [isPending, setIsPending] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setIsPending(true);
     try {
+      // signInWithGoogle now handles the redirect, so we don't expect it to resolve here.
       await signInWithGoogle();
     } catch (error) {
-      // The useAuth hook handles toasts, but we can stop the loading indicator
+      // Errors are now primarily handled in the useAuth hook after redirect.
+      // We can stop the loading indicator if the redirect setup fails.
       setIsPending(false);
     }
-    // No need to set isPending to false on success, as the page will redirect
   };
 
   return (
@@ -51,13 +52,13 @@ export default function LoginPage() {
         <CardDescription>Sign in to continue to your dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending}>
-            {isPending ? (
+        <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending || loading}>
+            {isPending || loading ? (
                 <Loader2 className="animate-spin" />
             ) : (
                 <GoogleIcon />
             )}
-            {isPending ? 'Redirecting...' : 'Sign in with Google'}
+            {isPending || loading ? 'Redirecting...' : 'Sign in with Google'}
         </Button>
       </CardContent>
     </Card>

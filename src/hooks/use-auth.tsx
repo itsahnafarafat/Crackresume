@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -45,35 +45,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     });
+    
+    // Handle the redirect result
+    const handleRedirect = async () => {
+        try {
+            const result = await getRedirectResult(auth);
+            if (result) {
+                const googleUser = result.user;
+                const userDocRef = doc(firestore, 'users', googleUser.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        uid: googleUser.uid,
+                        email: googleUser.email,
+                        displayName: googleUser.displayName,
+                        photoURL: googleUser.photoURL,
+                        createdAt: serverTimestamp(),
+                        resumeContent: '',
+                        isAdmin: false,
+                    });
+                }
+                router.push('/');
+                toast({ title: "Login Successful", description: "Welcome back!"});
+            }
+        } catch (error: any) {
+            console.error("Google Sign-In redirect error:", error);
+            if (error.code !== 'auth/web-storage-unsupported') {
+               toast({ title: "Sign-In Failed", description: "Could not complete sign in with Google. Please try again.", variant: 'destructive' });
+            }
+        }
+    }
+    
+    handleRedirect();
 
     return () => unsubscribe();
-  }, []);
+  }, [router, toast]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const googleUser = result.user;
-
-      // Check if user exists in Firestore
-      const userDocRef = doc(firestore, 'users', googleUser.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        // Create a new user document if it's their first time
-        await setDoc(userDocRef, {
-          uid: googleUser.uid,
-          email: googleUser.email,
-          displayName: googleUser.displayName,
-          photoURL: googleUser.photoURL,
-          createdAt: serverTimestamp(),
-          resumeContent: '',
-          isAdmin: false,
-        });
-      }
-      
-      router.push('/');
-      toast({ title: "Login Successful", description: "Welcome back!"});
+      await signInWithRedirect(auth, provider);
     } catch (error: any) {
       console.error("Google Sign-In error:", error);
       toast({ title: "Sign-In Failed", description: "Could not sign in with Google. Please try again.", variant: 'destructive' });

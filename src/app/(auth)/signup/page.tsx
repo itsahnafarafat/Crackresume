@@ -30,7 +30,7 @@ const GoogleIcon = () => (
 
 
 export default function SignUpPage() {
-    const { signInWithGoogle } = useAuth();
+    const { signInWithGoogle, loading } = useAuth();
     const [isPending, setIsPending] = useState(false);
 
     const handleGoogleSignIn = async () => {
@@ -49,13 +49,13 @@ export default function SignUpPage() {
                 <CardDescription>Join Crackresume with a single click.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending}>
-                    {isPending ? (
+                <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending || loading}>
+                    {isPending || loading ? (
                         <Loader2 className="animate-spin" />
                     ) : (
                         <GoogleIcon />
                     )}
-                    {isPending ? 'Redirecting...' : 'Sign up with Google'}
+                    {isPending || loading ? 'Redirecting...' : 'Sign up with Google'}
                 </Button>
             </CardContent>
         </Card>
