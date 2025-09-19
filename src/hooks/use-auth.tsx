@@ -26,33 +26,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
-      if (firebaseUser) {
-        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-            const userData = userDoc.data() as UserData;
-            setUser({
-                ...firebaseUser,
-                ...userData,
-            });
-        } else {
-             setUser(firebaseUser as UserData);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-    
-    // Handle the redirect result
     const handleRedirect = async () => {
         try {
             const result = await getRedirectResult(auth);
             if (result) {
-                setLoading(true);
+                setLoading(true); // Start loading while we process the redirect
                 const googleUser = result.user;
                 const userDocRef = doc(firestore, 'users', googleUser.uid);
                 const userDoc = await getDoc(userDocRef);
@@ -77,26 +55,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                toast({ title: "Sign-In Failed", description: "Could not complete sign in with Google. Please try again.", variant: 'destructive' });
             }
         } finally {
-            // Even if there's an error, we should stop loading if a user isn't found
-            if (!auth.currentUser) {
-              setLoading(false);
-            }
+            // This is important to stop loading even if redirect result is null or fails
+            setLoading(false);
         }
     }
     
     handleRedirect();
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
+      if (firebaseUser) {
+        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
+        const userDoc = await getDoc(userDocRef);
+        
+        const userData = userDoc.exists() ? userDoc.data() as UserData : {};
+        setUser({ ...firebaseUser, ...userData });
+
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
 
     return () => unsubscribe();
   }, [router, toast]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithRedirect(auth, provider);
-    } catch (error: any) {
-      console.error("Google Sign-In error:", error);
-      toast({ title: "Sign-In Failed", description: "Could not sign in with Google. Please try again.", variant: 'destructive' });
-    }
+    // No need for a try-catch here for signInWithRedirect, as errors are handled by getRedirectResult
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {
