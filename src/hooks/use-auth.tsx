@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
         const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
         const userDoc = await getDoc(userDocRef);
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const result = await getRedirectResult(auth);
             if (result) {
+                setLoading(true);
                 const googleUser = result.user;
                 const userDocRef = doc(firestore, 'users', googleUser.uid);
                 const userDoc = await getDoc(userDocRef);
@@ -66,13 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         isAdmin: false,
                     });
                 }
-                router.push('/');
-                toast({ title: "Login Successful", description: "Welcome back!"});
+                router.push('/dashboard');
+                toast({ title: "Login Successful", description: "Welcome!"});
             }
         } catch (error: any) {
             console.error("Google Sign-In redirect error:", error);
             if (error.code !== 'auth/web-storage-unsupported') {
                toast({ title: "Sign-In Failed", description: "Could not complete sign in with Google. Please try again.", variant: 'destructive' });
+            }
+        } finally {
+            // Even if there's an error, we should stop loading if a user isn't found
+            if (!auth.currentUser) {
+              setLoading(false);
             }
         }
     }
@@ -111,6 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userDocRef = doc(firestore, 'users', user.uid);
     try {
         await updateDoc(userDocRef, { resumeContent });
+        setUser(prevUser => prevUser ? { ...prevUser, resumeContent } : null);
         toast({ title: "Success", description: "Your resume has been saved." });
     } catch (error) {
         console.error("Error updating resume:", error);
