@@ -26,29 +26,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
-        
-        const unsubFromDoc = onSnapshot(userDocRef, (userDoc) => {
-            if (userDoc.exists()) {
-                const userData = userDoc.data() as UserData;
-                setUser({
-                    ...firebaseUser,
-                    ...userData,
-                });
-            } else {
-                 setUser(firebaseUser as UserData);
-            }
-            setLoading(false);
-        });
+        const userDoc = await getDoc(userDocRef);
 
-        return () => unsubFromDoc();
-
+        if (userDoc.exists()) {
+            const userData = userDoc.data() as UserData;
+            setUser({
+                ...firebaseUser,
+                ...userData,
+            });
+        } else {
+             setUser(firebaseUser as UserData);
+        }
       } else {
         setUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
