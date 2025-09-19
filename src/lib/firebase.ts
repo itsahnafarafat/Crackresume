@@ -20,7 +20,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const auth = typeof window !== 'undefined' ? initializeAuth(app, {
+  persistence: browserPopupRedirectResolver,
+}) : getAuth(app);
 const firestore = getFirestore(app);
 
 // Analytics (only initialize in browser, not on server)
