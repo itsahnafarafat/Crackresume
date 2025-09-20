@@ -202,7 +202,7 @@ content: `
  },
  {
   slug: 'why-your-resume-gets-rejected-in-6-seconds-2025',
-  title: 'Why Your Resume Gets Rejected in 6 Seconds (And How to Fix It!!)',
+  title: 'Why Your Resume Gets Rejected in 6 Seconds (And How to Fix It!)',
   excerpt: 'Discover why 75% of resumes get rejected before human eyes see them. Learn the exact ATS optimization techniques that get your resume past automated screening in 2025.',
   author: 'Career Coach & ATS Optimization Expert',
   date: '2025-09-04',
