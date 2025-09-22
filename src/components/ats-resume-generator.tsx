@@ -303,7 +303,7 @@ export function AtsResumeGenerator() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10 transition-all duration-300 hover:border-primary/50 animate-in fade-in slide-in-from-left-12 duration-1000">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-6 h-6" /> Your Resume
@@ -322,7 +322,7 @@ export function AtsResumeGenerator() {
             />
           </CardContent>
         </Card>
-        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10 transition-all duration-300 hover:border-primary/50 animate-in fade-in slide-in-from-right-12 duration-1000">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clipboard className="w-6 h-6" /> Job Description
