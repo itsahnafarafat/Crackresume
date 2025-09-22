@@ -34,8 +34,7 @@ export function Header() {
 
     return (
         <>
-            {createLink("/", "Resume Tool")}
-            {createLink("/job-match", "Job Match")}
+            {createLink("/", "Toolkit")}
             {createLink("/learning-hub", "Learning Hub")}
             {createLink("/about", "About")}
         </>
@@ -44,7 +43,7 @@ export function Header() {
 
   return (
     <header className="fixed top-4 inset-x-0 z-50 flex justify-center">
-        <div className="flex h-14 items-center justify-between gap-4 rounded-full border bg-background/60 p-2 px-4 text-sm font-medium backdrop-blur-sm">
+        <div className="flex h-14 items-center justify-between gap-6 rounded-full border bg-background/60 p-2 px-6 text-sm font-medium backdrop-blur-sm">
             <div className="hidden md:flex">
                 <Logo />
             </div>
@@ -57,7 +56,7 @@ export function Header() {
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left">
+                    <SheetContent side="left" className="bg-background/80 backdrop-blur-xl">
                         <SheetClose asChild>
                             <Logo />
                         </SheetClose>
@@ -84,7 +83,7 @@ export function Header() {
                 </Sheet>
             </div>
             
-            <nav className="hidden md:flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-6">
                 {navLinks()}
             </nav>
 
