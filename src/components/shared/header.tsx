@@ -25,10 +25,9 @@ export function Header() {
   const navLinks = (isSheet = false) => {
     const commonClasses = "text-muted-foreground transition-colors hover:text-foreground";
     const sheetClasses = isSheet ? 'text-lg w-full justify-start' : '';
-    const linkComponent = isSheet ? SheetClose : 'div';
 
-    const createLink = (href: string, text: string, closeSheet?: () => void) => {
-        const link = <Link href={href} className={`${commonClasses} ${sheetClasses}`} onClick={closeSheet}>{text}</Link>;
+    const createLink = (href: string, text: string) => {
+        const link = <Link href={href} className={`${commonClasses} ${sheetClasses}`}>{text}</Link>;
         return isSheet ? <SheetClose asChild>{link}</SheetClose> : link;
     }
 
@@ -36,7 +35,7 @@ export function Header() {
         <>
             {createLink("/", "Toolkit")}
             {createLink("/learning-hub", "Learning Hub")}
-            {createLink("/pricing", "Pricing")}
+            {createLink("/#pricing", "Pricing")}
             {createLink("/about", "About")}
         </>
     );

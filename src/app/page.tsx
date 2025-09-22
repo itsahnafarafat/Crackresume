@@ -7,13 +7,66 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2, FileText, ClipboardCheck, Briefcase } from "lucide-react";
+import { Loader2, FileText, ClipboardCheck, Briefcase, Check } from "lucide-react";
 import { JobTracker } from "@/components/job-tracker";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
 import { CompanyMarquee } from "@/components/company-marquee";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+const pricingTiers = [
+    {
+        name: "Free",
+        price: "$0",
+        period: "/ month",
+        description: "For individuals just getting started.",
+        features: [
+            "10 Resume Generations / month",
+            "10 Job Match Analyses / month",
+            "Basic Job Tracker",
+            "Access to Learning Hub",
+        ],
+        cta: "Get Started for Free",
+        href: "/signup",
+        isFeatured: false,
+    },
+    {
+        name: "Pro",
+        price: "$19",
+        period: "/ month",
+        description: "For serious job seekers who need an edge.",
+        features: [
+            "Unlimited Resume Generations",
+            "Unlimited Job Match Analyses",
+            "Unlimited Cover Letter Generations",
+            "Advanced Job Tracker",
+            "Priority Support",
+            "Early access to new features"
+        ],
+        cta: "Go Pro",
+        href: "#", // Replace with your payment link
+        isFeatured: true,
+    },
+    {
+        name: "Enterprise",
+        price: "Custom",
+        period: "",
+        description: "For career coaches and organizations.",
+        features: [
+            "Everything in Pro",
+            "Multi-user management",
+            "Custom branding",
+            "Dedicated Account Manager",
+            "API Access",
+        ],
+        cta: "Contact Sales",
+        href: "#", // Replace with your contact link
+        isFeatured: false,
+    }
+];
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -85,6 +138,43 @@ export default function Home() {
                 />
               </div>
             </div>
+
+            <div id="pricing" className="mx-auto w-full max-w-5xl mt-24">
+               <div className="max-w-3xl mx-auto text-center animate-in fade-in-50 delay-[1300ms] duration-1000">
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Simple, transparent pricing</h2>
+                    <p className="mt-4 text-xl text-muted-foreground">
+                        Choose the plan that's right for you. Unlock your career potential today.
+                    </p>
+                </div>
+
+                <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {pricingTiers.map((tier, index) => (
+                        <Card key={tier.name} className={`flex flex-col bg-card/80 backdrop-blur-sm border-white/10 ${tier.isFeatured ? 'border-primary/50 shadow-2xl shadow-primary/10' : ''} animate-in fade-in-50 slide-in-from-bottom-12 duration-1000`} style={{animationDelay: `${1500 + index * 200}ms`}}>
+                            <CardHeader className="p-6">
+                                <h3 className="text-lg font-semibold text-primary">{tier.name}</h3>
+                                <p className="mt-2 text-4xl font-bold tracking-tight text-foreground">{tier.price}<span className="text-lg font-normal text-muted-foreground">{tier.period}</span></p>
+                                <CardDescription className="mt-3">{tier.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-1 p-6 pt-0">
+                                <ul className="space-y-4 text-sm text-muted-foreground">
+                                    {tier.features.map(feature => (
+                                        <li key={feature} className="flex items-center">
+                                            <Check className="h-4 w-4 mr-2 text-primary" />
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </CardContent>
+                            <CardFooter className="p-6">
+                                <Button asChild className="w-full" variant={tier.isFeatured ? 'default' : 'outline'}>
+                                    <Link href={tier.href}>{tier.cta}</Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+
           </div>
         </div>
       </main>
