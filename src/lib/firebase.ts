@@ -14,7 +14,8 @@ const firebaseConfig = {
   "storageBucket": "resuai-qodve.appspot.com",
   "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   "authDomain": "resuai-qodve.firebaseapp.com",
-  "messagingSenderId": "258754616939"
+  "messagingSenderId": "258754616939",
+  "measurementId": "G-6NCSY7LRWR"
 };
 
 
