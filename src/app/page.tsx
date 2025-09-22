@@ -7,13 +7,12 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2, FileText, ClipboardCheck, Briefcase, Check } from "lucide-react";
+import { Loader2, FileText, ClipboardCheck, Check, UploadCloud, Bot, Target } from "lucide-react";
 import { JobTracker } from "@/components/job-tracker";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
-import { CompanyMarquee } from "@/components/company-marquee";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -68,6 +67,24 @@ const pricingTiers = [
     }
 ];
 
+const howItWorksSteps = [
+    {
+        icon: <UploadCloud className="w-10 h-10 text-primary" />,
+        title: "Step 1: Provide Your Details",
+        description: "Paste your current resume and the description of the job you're targeting. This gives our AI the context it needs."
+    },
+    {
+        icon: <Bot className="w-10 h-10 text-primary" />,
+        title: "Step 2: Get AI-Powered Insights",
+        description: "Generate an ATS-optimized resume in seconds. Analyze your job match score to understand your strengths and weaknesses."
+    },
+    {
+        icon: <Target className="w-10 h-10 text-primary" />,
+        title: "Step 3: Apply with Confidence",
+        description: "Use your newly tailored resume and cover letter to apply. Track all your applications from 'Saved' to 'Offer' in one place."
+    }
+];
+
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -104,8 +121,22 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="animate-in fade-in-50 delay-500 duration-1000">
-                <CompanyMarquee />
+            <div className="mx-auto max-w-7xl mt-20">
+                <div className="text-center mb-12 animate-in fade-in-50 delay-500 duration-1000">
+                  <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">How It Works</h2>
+                  <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl mt-4">Transform your job search in three simple steps.</p>
+               </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in-50 delay-700 duration-1000">
+                    {howItWorksSteps.map((step, index) => (
+                         <div key={index} className="flex flex-col items-center text-center p-6 bg-card/50 rounded-xl border border-white/10">
+                            <div className="mb-4 bg-secondary p-4 rounded-full">
+                                {step.icon}
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">{step.title}</h3>
+                            <p className="text-muted-foreground">{step.description}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="mx-auto max-w-7xl mt-20 animate-in fade-in-50 delay-700 duration-1000">
