@@ -55,6 +55,62 @@ export default function Home() {
   }
 
   const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
+  
+  const proCheckoutUrl = user
+    ? `${process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_URL}?checkout[custom][user_id]=${user.uid}&checkout[email]=${user.email}`
+    : `${process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_URL}`;
+
+
+  const pricingTiers = [
+    {
+        name: "Free",
+        price: "$0",
+        period: "/ month",
+        description: "For individuals just getting started.",
+        features: [
+            "10 Resume Generations / month",
+            "10 Job Match Analyses / month",
+            "Basic Job Tracker",
+            "Access to Learning Hub",
+        ],
+        cta: "Get Started for Free",
+        href: "/signup",
+        isFeatured: false,
+    },
+    {
+        name: "Pro",
+        price: "$19",
+        period: "/ month",
+        description: "For serious job seekers who need an edge.",
+        features: [
+            "Unlimited Resume Generations",
+            "Unlimited Job Match Analyses",
+            "Unlimited Cover Letter Generations",
+            "Advanced Job Tracker",
+            "Priority Support",
+            "Early access to new features"
+        ],
+        cta: "Go Pro",
+        href: proCheckoutUrl,
+        isFeatured: true,
+    },
+    {
+        name: "Enterprise",
+        price: "Custom",
+        period: "",
+        description: "For career coaches and organizations.",
+        features: [
+            "Everything in Pro",
+            "Multi-user management",
+            "Custom branding",
+            "Dedicated Account Manager",
+            "API Access",
+        ],
+        cta: "Contact Sales",
+        href: "mailto:sales@example.com",
+        isFeatured: false,
+    }
+  ];
 
   return (
     <div className="flex min-h-screen flex-col main-bg">
@@ -199,54 +255,3 @@ export default function Home() {
     </div>
   );
 }
-
-const pricingTiers = [
-    {
-        name: "Free",
-        price: "$0",
-        period: "/ month",
-        description: "For individuals just getting started.",
-        features: [
-            "10 Resume Generations / month",
-            "10 Job Match Analyses / month",
-            "Basic Job Tracker",
-            "Access to Learning Hub",
-        ],
-        cta: "Get Started for Free",
-        href: "/signup",
-        isFeatured: false,
-    },
-    {
-        name: "Pro",
-        price: "$19",
-        period: "/ month",
-        description: "For serious job seekers who need an edge.",
-        features: [
-            "Unlimited Resume Generations",
-            "Unlimited Job Match Analyses",
-            "Unlimited Cover Letter Generations",
-            "Advanced Job Tracker",
-            "Priority Support",
-            "Early access to new features"
-        ],
-        cta: "Go Pro",
-        href: "#", // Replace with your payment link
-        isFeatured: true,
-    },
-    {
-        name: "Enterprise",
-        price: "Custom",
-        period: "",
-        description: "For career coaches and organizations.",
-        features: [
-            "Everything in Pro",
-            "Multi-user management",
-            "Custom branding",
-            "Dedicated Account Manager",
-            "API Access",
-        ],
-        cta: "Contact Sales",
-        href: "#", // Replace with your contact link
-        isFeatured: false,
-    }
-];

@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  env: {
+    NEXT_PUBLIC_LEMONSQUEEZY_STORE_URL: process.env.LEMONSQUEEZY_STORE_URL,
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
+  }
 };
 
 export default nextConfig;

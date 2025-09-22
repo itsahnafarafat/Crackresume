@@ -3,9 +3,7 @@ import { initializeApp, getApp, getApps } from 'firebase/app';
 import { 
   getAuth, 
   initializeAuth, 
-  browserPopupRedirectResolver,
-  signInWithPopup,
-  GoogleAuthProvider
+  browserPopupRedirectResolver
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
@@ -14,7 +12,7 @@ const firebaseConfig = {
   "projectId": "resuai-qodve",
   "appId": "1:258754616939:web:387aa3472eadd3c3d05b2e",
   "storageBucket": "resuai-qodve.appspot.com",
-  "apiKey": "AIzaSyB6PgSGzpxbWEhNs9eFHP1iIX9n6ZvuVgE",
+  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   "authDomain": "resuai-qodve.firebaseapp.com",
   "messagingSenderId": "258754616939"
 };
