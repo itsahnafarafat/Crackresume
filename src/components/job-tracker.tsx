@@ -138,7 +138,7 @@ export function JobTracker({ limit }: { limit?: number }) {
   }
 
   return (
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
           <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
                 <CardTitle className="text-2xl font-bold tracking-tight">My Tracked Jobs</CardTitle>
@@ -160,7 +160,7 @@ export function JobTracker({ limit }: { limit?: number }) {
             {!loading && !user && (
                  <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
-                    <h3 className="mt-4 text-lg font-semibold">Track Your Applications</h3>
+                    <h3 className="mt-4 text-lg font-semibold text-foreground">Track Your Applications</h3>
                     <p className="mt-1 text-sm">Log in or create an account to save and manage your job applications.</p>
                      <div className="flex gap-4 justify-center pt-4">
                         <Button asChild>
@@ -175,7 +175,7 @@ export function JobTracker({ limit }: { limit?: number }) {
             {!loading && user && jobs.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                     <Briefcase className="mx-auto h-12 w-12" />
-                    <h3 className="mt-4 text-lg font-semibold">No jobs tracked yet</h3>
+                    <h3 className="mt-4 text-lg font-semibold text-foreground">No jobs tracked yet</h3>
                     <p className="mt-1 text-sm">Use the Resume Tool to automatically track a job, or add one manually.</p>
                 </div>
             )}
@@ -183,7 +183,7 @@ export function JobTracker({ limit }: { limit?: number }) {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-white/10">
                     <TableHead>Company</TableHead>
                     <TableHead>Position</TableHead>
                     <TableHead className="hidden sm:table-cell">Date Added</TableHead>
@@ -193,7 +193,7 @@ export function JobTracker({ limit }: { limit?: number }) {
                 </TableHeader>
                 <TableBody>
                   {jobs.map((job) => (
-                    <TableRow key={job.id} onClick={handleJobClick}>
+                    <TableRow key={job.id} onClick={handleJobClick} className="border-white/10">
                       <TableCell className="font-medium">{job.companyName}</TableCell>
                       <TableCell>{job.jobTitle}</TableCell>
                       <TableCell className="hidden sm:table-cell">{formatDate(job.applicationDate)}</TableCell>
@@ -293,7 +293,7 @@ function AddEditJobDialog({ job, onSave, triggerButton }: AddEditJobDialogProps)
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] md:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[425px] md:max-w-[600px] max-h-[90vh] overflow-y-auto bg-card/80 backdrop-blur-sm border-white/10">
             <DialogHeader>
             <DialogTitle>{job ? 'Edit Job' : 'Add New Job'}</DialogTitle>
             </DialogHeader>

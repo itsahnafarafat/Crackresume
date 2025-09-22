@@ -42,9 +42,9 @@ export default function LoginPage() {
   const isLoading = isPending || authLoading;
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/10">
       <CardHeader className="text-center">
-        <CardTitle>Welcome to Crackresume!</CardTitle>
+        <CardTitle className="text-3xl">Welcome back!</CardTitle>
         <CardDescription>Sign in to continue to your dashboard.</CardDescription>
       </CardHeader>
       <CardContent>

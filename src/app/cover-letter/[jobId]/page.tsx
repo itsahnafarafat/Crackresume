@@ -134,16 +134,16 @@ export default function CoverLetterPage() {
 
   if (loading || authLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center main-bg">
         <Loader2 className="h-12 w-12 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <div className="container px-4 md:px-6 py-12">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
@@ -157,7 +157,7 @@ export default function CoverLetterPage() {
             <div className="mx-auto max-w-7xl mt-12 space-y-8">
                 {/* Top Row: Data */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Card>
+                    <Card className="bg-card/80 backdrop-blur-sm border-white/10">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Briefcase/> Job Description</CardTitle>
                              <CardDescription>{job?.jobTitle}</CardDescription>
@@ -166,11 +166,11 @@ export default function CoverLetterPage() {
                              <Textarea
                                 readOnly
                                 value={job?.jobDescription || 'No job description available.'}
-                                className="h-96 bg-muted/50 text-sm"
+                                className="h-96 bg-secondary/50 text-sm"
                             />
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="bg-card/80 backdrop-blur-sm border-white/10">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><FileText/> Your Resume</CardTitle>
                              <CardDescription>Your saved resume is pre-filled, or you can paste one below.</CardDescription>
@@ -180,14 +180,14 @@ export default function CoverLetterPage() {
                                 value={resumeContent}
                                 onChange={(e) => setResumeContent(e.target.value)}
                                 placeholder={'Your saved resume will appear here, or you can paste a new one.'}
-                                className="h-96 text-sm"
+                                className="h-96 text-sm bg-secondary/50"
                             />
                         </CardContent>
                     </Card>
                 </div>
                  {/* Bottom Row: Generator */}
                 <div>
-                    <Card>
+                    <Card className="bg-card/80 backdrop-blur-sm border-white/10">
                          <CardHeader>
                             <CardTitle>Your Custom Cover Letter</CardTitle>
                             <CardDescription>Click the button below to create your letter. It will appear in the text box.</CardDescription>
@@ -201,7 +201,7 @@ export default function CoverLetterPage() {
                                 readOnly
                                 value={coverLetter}
                                 placeholder={isPending ? "Generating your cover letter..." : "Your generated cover letter will appear here..."}
-                                className="h-96 bg-muted/50 text-sm"
+                                className="h-96 bg-secondary/50 text-sm"
                             />
                             {coverLetter && !isPending && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

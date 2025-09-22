@@ -69,7 +69,7 @@ export function JobMatchAnalyzer() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-6 h-6" /> Your Resume
@@ -84,11 +84,11 @@ export function JobMatchAnalyzer() {
               value={resumeContent}
               onChange={(e) => setResumeContent(e.target.value)}
               rows={15}
-              className="text-sm"
+              className="text-sm bg-secondary/50"
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clipboard className="w-6 h-6" /> Job Description
@@ -103,7 +103,7 @@ export function JobMatchAnalyzer() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={15}
-              className="text-sm"
+              className="text-sm bg-secondary/50"
             />
           </CardContent>
         </Card>
@@ -126,7 +126,7 @@ export function JobMatchAnalyzer() {
 
       {result && !isPending && (
         <div className="space-y-6">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card/80 backdrop-blur-sm border-white/10">
                 <CardHeader>
                      <CardTitle className="flex items-center gap-2 text-2xl">
                         {result.isMatch ? (

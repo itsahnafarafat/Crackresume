@@ -5,7 +5,7 @@ import type { BlogPost } from "@/lib/types";
 import { format } from 'date-fns';
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Calendar, User } from "lucide-react";
+import { Calendar, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface BlogPostPageProps {
@@ -34,19 +34,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const formattedDate = format(new Date(post.date as string), 'PPP');
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <article className="container mx-auto py-12 px-4 md:px-6">
           <div className="max-w-3xl mx-auto">
             <div className="mb-8">
-              <Button asChild variant="outline">
+              <Button asChild variant="ghost">
                 <Link href="/learning-hub">
-                  &larr; Back to Learning Hub
+                  <ArrowLeft /> Back to Learning Hub
                 </Link>
               </Button>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl mb-4">
               {post.title}
             </h1>
             <div className="flex items-center space-x-4 text-muted-foreground mb-4">
@@ -67,7 +67,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </article>
       </main>
-      <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t bg-muted/40">
+      <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t border-white/5 relative z-10">
         <p className="text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} Crackresume. All rights reserved.
         </p>

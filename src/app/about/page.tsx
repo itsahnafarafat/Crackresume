@@ -2,16 +2,16 @@ import { Header } from "@/components/shared/header";
 
 export default function AboutPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <div className="container mx-auto py-12 px-4 md:px-6">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">About Crackresume</h1>
-            <p className="mt-6 text-xl text-gray-600">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">About Crackresume</h1>
+            <p className="mt-6 text-xl text-muted-foreground">
               Crackresume is an innovative platform designed to bridge the gap between job seekers and their dream careers. In today&apos;s competitive job market, a standout resume is crucial. That&apos;s where we come in.
             </p>
-            <div className="mt-10 prose prose-lg text-gray-500">
+            <div className="mt-10 prose prose-lg text-left mx-auto">
               <p>
                 Our mission is to empower individuals with the tools they need to create perfectly tailored, ATS-friendly resumes that capture the attention of recruiters. We leverage the power of artificial intelligence to analyze job descriptions and help you highlight the most relevant skills and experiences from your professional history.
               </p>
@@ -25,7 +25,7 @@ export default function AboutPage() {
           </div>
         </div>
       </main>
-       <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t">
+       <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t border-white/5 relative z-10">
           <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Crackresume. All rights reserved.</p>
       </footer>
     </div>

@@ -26,10 +26,10 @@ export default function JobMatchPage() {
 
         if (!user) {
             return (
-                <Card className="mt-12">
+                <Card className="mt-12 bg-card/80 backdrop-blur-sm border-white/10">
                     <CardContent className="text-center py-12 text-muted-foreground">
                         <ClipboardCheck className="mx-auto h-12 w-12" />
-                        <h3 className="mt-4 text-lg font-semibold">Unlock the Job Match Analyzer</h3>
+                        <h3 className="mt-4 text-lg font-semibold text-foreground">Unlock the Job Match Analyzer</h3>
                         <p className="mt-1 text-sm">Log in or create an account to analyze your job match and save your results.</p>
                         <div className="flex gap-4 justify-center pt-4">
                             <Button asChild>
@@ -48,9 +48,9 @@ export default function JobMatchPage() {
     }
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <div className="w-full py-12 md:py-16 lg:py-20">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
@@ -70,7 +70,7 @@ export default function JobMatchPage() {
         </div>
       </main>
 
-      <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t mt-auto">
+      <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t border-white/5 mt-auto relative z-10">
         <div className="flex gap-4">
           <Link href="/about" className="text-sm text-muted-foreground hover:underline">About</Link>
           <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">Privacy Policy</Link>

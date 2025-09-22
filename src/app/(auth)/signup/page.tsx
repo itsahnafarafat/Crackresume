@@ -42,9 +42,9 @@ export default function SignUpPage() {
     const isLoading = isPending || authLoading;
 
     return (
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm border-white/10">
             <CardHeader className="text-center">
-                <CardTitle>Create an Account</CardTitle>
+                <CardTitle className="text-3xl">Create an Account</CardTitle>
                 <CardDescription>Join Crackresume with a single click.</CardDescription>
             </CardHeader>
             <CardContent>

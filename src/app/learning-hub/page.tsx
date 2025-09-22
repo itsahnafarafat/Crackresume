@@ -14,9 +14,12 @@ export default async function LearningHubPage() {
         )
     }
 
+    // Sort posts by date, most recent first
+    const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
+
     return (
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post) => (
+            {sortedPosts.map((post) => (
             <BlogPostCard key={post.slug} post={post} />
             ))}
         </div>
@@ -24,9 +27,9 @@ export default async function LearningHubPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative z-10">
         <div className="container mx-auto py-12 px-4 md:px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Learning Hub</h1>
@@ -37,7 +40,7 @@ export default async function LearningHubPage() {
           {renderContent()}
         </div>
       </main>
-      <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t mt-auto">
+      <footer className="flex items-center justify-center py-6 md:py-8 w-full border-t border-white/5 mt-auto relative z-10">
           <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Crackresume. All rights reserved.</p>
       </footer>
     </div>

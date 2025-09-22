@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2, Sparkles, Workflow, ClipboardCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { JobTracker } from "@/components/job-tracker";
 import { analytics } from "@/lib/firebase";
 import { logEvent } from "firebase/analytics";
@@ -24,23 +24,22 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center main-bg">
         <Loader2 className="h-12 w-12 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]"><div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div></div>
+    <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1">
-        <div className="w-full py-12 md:py-16 lg:py-20">
+      <main className="flex-1 relative z-10">
+        <div className="w-full py-20 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-16 animate-in fade-in-25 slide-in-from-top-8 duration-1000 ease-in-out">
-              <div className="space-y-4">
-                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">AI-Powered Job Application Toolkit</div>
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl xl:text-7xl/none bg-clip-text text-transparent bg-gradient-to-br from-gray-900 to-gray-600">
+              <div className="space-y-6">
+                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-semibold text-primary">AI-POWERED JOB APPLICATION TOOLKIT</div>
+                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl xl:text-7xl/none bg-clip-text text-transparent bg-gradient-to-br from-gray-50 to-gray-400">
                   Land Your Dream Job Faster
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
@@ -66,7 +65,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t mt-auto">
+      <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t border-white/5 mt-auto relative z-10">
         <div className="flex gap-4">
           <Link href="/about" className="text-sm text-muted-foreground hover:underline">About</Link>
           <Link href="/privacy" className="text-sm text-muted-foreground hover:underline">Privacy Policy</Link>

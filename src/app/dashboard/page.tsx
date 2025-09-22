@@ -21,16 +21,16 @@ export default function DashboardPage() {
 
     if (loading || !user) {
         return (
-            <div className="flex h-screen items-center justify-center">
+            <div className="flex h-screen items-center justify-center main-bg">
                 <Loader2 className="h-12 w-12 animate-spin" />
             </div>
         );
     }
     
     return (
-        <div className="flex min-h-screen flex-col bg-muted/40">
+        <div className="flex min-h-screen flex-col main-bg">
             <Header />
-            <main className="flex-1">
+            <main className="flex-1 relative z-10">
                 <div className="w-full py-12 md:py-16 lg:py-20">
                     <div className="container px-4 md:px-6">
                          <div className="flex flex-col items-start justify-center space-y-2 mb-8">
@@ -53,7 +53,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </main>
-             <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t mt-auto">
+             <footer className="flex flex-col items-center justify-center gap-4 py-6 md:py-8 w-full border-t border-white/5 mt-auto relative z-10">
                 <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Crackresume. All rights reserved.</p>
             </footer>
         </div>

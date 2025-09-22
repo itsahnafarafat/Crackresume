@@ -303,7 +303,7 @@ export function AtsResumeGenerator() {
   return (
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-6 h-6" /> Your Resume
@@ -318,11 +318,11 @@ export function AtsResumeGenerator() {
               value={resumeContent}
               onChange={(e) => setResumeContent(e.target.value)}
               rows={15}
-              className="text-sm"
+              className="text-sm bg-secondary/50"
             />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clipboard className="w-6 h-6" /> Job Description
@@ -337,7 +337,7 @@ export function AtsResumeGenerator() {
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               rows={15}
-              className="text-sm"
+              className="text-sm bg-secondary/50"
             />
           </CardContent>
         </Card>
@@ -360,7 +360,7 @@ export function AtsResumeGenerator() {
 
       {result && !isPending && (
         <div className="space-y-6">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card/80 backdrop-blur-sm border-white/10">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Wand2 className="w-6 h-6 text-primary" /> AI Generated Result
@@ -405,10 +405,10 @@ export function AtsResumeGenerator() {
                             <Textarea
                                 readOnly
                                 value={result.atsFriendlyResumeText}
-                                className="h-[400px] bg-muted/50 text-sm"
+                                className="h-[400px] bg-secondary/50 text-sm"
                             />
                         </div>
-                        <div className="space-y-4 rounded-lg border bg-background p-4">
+                        <div className="space-y-4 rounded-lg border bg-background/50 p-4">
                             <h3 className="font-semibold flex items-center gap-2">
                                 <MessageSquareQuote className="w-5 h-5 text-primary" /> Want an Even Better Version?
                             </h3>

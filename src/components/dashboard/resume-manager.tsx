@@ -27,7 +27,7 @@ export function ResumeManager() {
     }
 
     return (
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
             <CardHeader>
                 <CardTitle>Your Base Resume</CardTitle>
                 <CardDescription>Save your resume here. It will be automatically used by the resume tool.</CardDescription>
@@ -38,7 +38,7 @@ export function ResumeManager() {
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
                     rows={20}
-                    className="text-sm"
+                    className="text-sm bg-secondary/50"
                 />
                 <Button onClick={handleSave} disabled={isPending} className="w-full">
                     {isPending ? <Loader2 className="animate-spin" /> : <Save />}
