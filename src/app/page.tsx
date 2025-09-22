@@ -135,10 +135,10 @@ export default function Home() {
                   <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">How It Works</h2>
                   <p className="max-w-[600px] mx-auto text-muted-foreground md:text-xl mt-4">Transform your job search in three simple steps.</p>
                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in-50 delay-700 duration-1000">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in-50 delay-700 duration-1000 [perspective:1000px]">
                     {howItWorksSteps.map((step, index) => (
-                         <div key={index} className="flex flex-col items-center text-center p-6 bg-card/50 rounded-xl border border-white/10">
-                            <div className="mb-4 bg-secondary p-4 rounded-full">
+                         <div key={index} className="card-float group flex flex-col items-center text-center p-6 bg-card/50 rounded-xl border border-white/10 transition-all duration-300 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2 hover:[transform:translateZ(40px)_rotateX(5deg)]">
+                            <div className="mb-4 bg-secondary p-4 rounded-full transition-transform duration-300 group-hover:scale-110">
                                 {step.icon}
                             </div>
                             <h3 className="text-xl font-bold mb-2">{step.title}</h3>
