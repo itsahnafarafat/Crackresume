@@ -113,7 +113,13 @@
     right: 0;
     bottom: 0;
     background-image:
-        radial-gradient(circle at center, hsla(266, 78%, 56%, 0.15) 0%, transparent 40%),
+        /* Corner Gradients */
+        radial-gradient(ellipse 50% 50% at 0% 0%, hsla(266, 78%, 56%, 0.15), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 100% 0%, hsla(266, 78%, 56%, 0.15), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 0% 100%, hsla(266, 78%, 56%, 0.15), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 100% 100%, hsla(266, 78%, 56%, 0.15), transparent 70%),
+        
+        /* Starry dots */
         radial-gradient(2px 2px at 20% 20%, hsl(var(--primary) / 0.5), transparent),
         radial-gradient(2px 2px at 80% 30%, hsl(var(--primary) / 0.5), transparent),
         radial-gradient(3px 3px at 50% 60%, hsl(var(--primary) / 0.6), transparent),
@@ -122,12 +128,13 @@
         radial-gradient(3px 3px at 30% 90%, hsl(var(--primary) / 0.6), transparent);
     animation: pulse-gradient 10s infinite ease-in-out;
     z-index: 0;
+    opacity: 0.7;
 }
 
 @keyframes pulse-gradient {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.7; }
-    100% { transform: scale(1); opacity: 1; }
+    0% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.7; }
 }
 
 @keyframes marquee {
