@@ -4,8 +4,8 @@ export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1 relative z-10 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
-        <div className="container mx-auto py-12 px-4 md:px-6">
+      <main className="flex-1 relative z-10 pt-28">
+        <div className="container mx-auto py-12 px-4 md:px-6 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">About Crackresume</h1>
             <p className="mt-6 text-xl text-muted-foreground">

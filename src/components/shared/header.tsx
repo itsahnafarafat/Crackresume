@@ -36,6 +36,7 @@ export function Header() {
         <>
             {createLink("/", "Toolkit")}
             {createLink("/learning-hub", "Learning Hub")}
+            {createLink("/pricing", "Pricing")}
             {createLink("/about", "About")}
         </>
     );
