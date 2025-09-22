@@ -51,7 +51,7 @@ export default function JobMatchPage() {
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
       <main className="flex-1 relative z-10">
-        <div className="w-full py-12 md:py-16 lg:py-20">
+        <div className="w-full py-12 md:py-16 lg:py-20 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">

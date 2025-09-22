@@ -4,12 +4,12 @@ export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
         <div className="container mx-auto py-12 px-4 md:px-6">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">About Crackresume</h1>
             <p className="mt-6 text-xl text-muted-foreground">
-              Crackresume is an innovative platform designed to bridge the gap between job seekers and their dream careers. In today&apos;s competitive job market, a standout resume is crucial. That&apos;s where we come in.
+              Crackresume is an innovative platform designed to bridge the gap between job seekers and their dream careers. In today's competitive job market, a standout resume is crucial. That's where we come in.
             </p>
             <div className="mt-10 prose prose-lg text-left mx-auto">
               <p>
@@ -19,7 +19,7 @@ export default function AboutPage() {
                 Beyond resume building, Crackresume also provides a comprehensive job tracker, allowing you to manage your applications, monitor your progress, and stay organized throughout your job search. We believe that with the right tools, anyone can unlock their full potential and land the job they deserve.
               </p>
               <p>
-                Whether you&apos;re a recent graduate or a seasoned professional, Crackresume is your partner in navigating the complexities of the modern job search.
+                Whether you're a recent graduate or a seasoned professional, Crackresume is your partner in navigating the complexities of the modern job search.
               </p>
             </div>
           </div>

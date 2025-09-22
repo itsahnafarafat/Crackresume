@@ -36,7 +36,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
         <article className="container mx-auto py-12 px-4 md:px-6">
           <div className="max-w-3xl mx-auto">
             <div className="mb-8">

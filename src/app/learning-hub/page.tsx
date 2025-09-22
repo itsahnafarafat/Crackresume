@@ -30,7 +30,7 @@ export default async function LearningHubPage() {
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
       <main className="flex-1 relative z-10">
-        <div className="container mx-auto py-12 px-4 md:px-6">
+        <div className="container mx-auto py-12 px-4 md:px-6 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Learning Hub</h1>
             <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">

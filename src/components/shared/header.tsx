@@ -22,136 +22,108 @@ const Logo = () => (
 export function Header() {
   const { user, logout } = useAuth();
   
-  const navLinks = (closeSheet?: () => void) => (
-    <>
-        <Link
-            href="/"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={closeSheet}
-        >
-            Resume Tool
-        </Link>
-        <Link
-            href="/job-match"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={closeSheet}
-        >
-            Job Match
-        </Link>
-        <Link
-            href="/learning-hub"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={closeSheet}
-        >
-            Learning Hub
-        </Link>
-        <Link
-            href="/about"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={closeSheet}
-        >
-            About
-        </Link>
-        <Link
-            href="/privacy"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            onClick={closeSheet}
-        >
-            Privacy Policy
-        </Link>
-    </>
-  );
+  const navLinks = (isSheet = false) => {
+    const commonClasses = "text-muted-foreground transition-colors hover:text-foreground";
+    const sheetClasses = isSheet ? 'text-lg w-full justify-start' : '';
+    const linkComponent = isSheet ? SheetClose : 'div';
+
+    const createLink = (href: string, text: string, closeSheet?: () => void) => {
+        const link = <Link href={href} className={`${commonClasses} ${sheetClasses}`} onClick={closeSheet}>{text}</Link>;
+        return isSheet ? <SheetClose asChild>{link}</SheetClose> : link;
+    }
+
+    return (
+        <>
+            {createLink("/", "Resume Tool")}
+            {createLink("/job-match", "Job Match")}
+            {createLink("/learning-hub", "Learning Hub")}
+            {createLink("/about", "About")}
+        </>
+    );
+  };
 
   return (
-    <header className="sticky top-4 z-50 w-full">
-        <div className="container flex h-14 items-center rounded-xl border bg-background/60 p-4 backdrop-blur-sm">
-            <div className="mr-4 hidden md:flex">
+    <header className="fixed top-4 inset-x-0 z-50 flex justify-center">
+        <div className="flex h-14 items-center justify-between gap-4 rounded-full border bg-background/60 p-2 px-4 text-sm font-medium backdrop-blur-sm">
+            <div className="hidden md:flex">
                 <Logo />
             </div>
-            <nav className="hidden md:flex items-center gap-2 text-sm font-medium mx-auto">
+            
+             <div className="md:hidden">
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Menu className="h-5 w-5" />
+                            <span className="sr-only">Toggle navigation menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left">
+                        <SheetClose asChild>
+                            <Logo />
+                        </SheetClose>
+                        <Separator className="my-4" />
+                        <nav className="grid gap-4 text-base font-medium">
+                            {navLinks(true)}
+                        </nav>
+                        <Separator className="my-4" />
+                        {!user && (
+                            <div className="grid gap-4">
+                            <SheetClose asChild>
+                                <Button asChild variant="ghost" className="w-full">
+                                    <Link href="/login">Login</Link>
+                                </Button>
+                            </SheetClose>
+                            <SheetClose asChild>
+                                <Button asChild className="w-full">
+                                    <Link href="/signup">Sign Up</Link>
+                                </Button>
+                            </SheetClose>
+                            </div>
+                        )}
+                    </SheetContent>
+                </Sheet>
+            </div>
+            
+            <nav className="hidden md:flex items-center gap-2">
                 {navLinks()}
             </nav>
-            <div className="flex flex-1 items-center justify-between gap-2 md:justify-end">
-                <div className="w-full flex-1 md:w-auto md:flex-none">
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="md:hidden">
-                                <Menu className="h-5 w-5" />
-                                <span className="sr-only">Toggle navigation menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left">
-                            <SheetClose asChild>
-                                <Logo />
-                            </SheetClose>
-                            <Separator className="my-4" />
-                            <nav className="grid gap-4 text-base font-medium">
-                            {navLinks(() => {
-                                const closeButton = document.querySelector('[data-radix-dialog-close]');
-                                if (closeButton instanceof HTMLElement) {
-                                closeButton.click();
-                                }
-                            })}
-                            </nav>
-                            <Separator className="my-4" />
-                            {!user && (
-                                <div className="grid gap-4">
-                                <SheetClose asChild>
-                                    <Button asChild variant="ghost" className="w-full">
-                                        <Link href="/login">Login</Link>
-                                    </Button>
-                                </SheetClose>
-                                <SheetClose asChild>
-                                    <Button asChild className="w-full">
-                                        <Link href="/signup">Sign Up</Link>
-                                    </Button>
-                                </SheetClose>
-                                </div>
-                            )}
-                        </SheetContent>
-                    </Sheet>
-                    <div className="md:hidden">
-                        <Logo />
-                    </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                {user ? (
-                    <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Avatar className="cursor-pointer h-8 w-8">
-                        <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
-                        <AvatarFallback>
-                            {user.email ? user.email.charAt(0).toUpperCase() : <UserIcon />}
-                        </AvatarFallback>
-                        </Avatar>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <Link href="/dashboard">
-                                <LayoutDashboard className="mr-2 h-4 w-4" />
-                                <span>Dashboard</span>
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={logout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                    </DropdownMenu>
-                ) : (
-                    <div className="hidden sm:flex items-center gap-2">
-                        <Button asChild variant="ghost" size="sm">
-                            <Link href="/login">Login</Link>
-                        </Button>
-                        <Button asChild size="sm">
-                            <Link href="/signup">Sign Up</Link>
-                        </Button>
-                    </div>
-                )}
+            <div className="flex items-center gap-2">
+            {user ? (
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Avatar className="cursor-pointer h-8 w-8">
+                    <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
+                    <AvatarFallback>
+                        {user.email ? user.email.charAt(0).toUpperCase() : <UserIcon />}
+                    </AvatarFallback>
+                    </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{user.displayName || user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/dashboard">
+                            <LayoutDashboard className="mr-2 h-4 w-4" />
+                            <span>Dashboard</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+                </DropdownMenu>
+            ) : (
+                <div className="hidden sm:flex items-center gap-2">
+                    <Button asChild variant="ghost" size="sm">
+                        <Link href="/login">Login</Link>
+                    </Button>
+                    <Button asChild size="sm">
+                        <Link href="/signup">Sign Up</Link>
+                    </Button>
                 </div>
+            )}
             </div>
         </div>
     </header>
