@@ -11,10 +11,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "../ui/sheet";
 import { Separator } from "../ui/separator";
 
 const Logo = () => (
-    <Link href="/" className="flex items-center space-x-2">
-        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-            <Wand2 className="text-primary w-5 h-5" />
-        </div>
+    <Link href="/" className="flex items-center">
         <span className="font-bold text-xl text-foreground">Crackresume</span>
     </Link>
 )
