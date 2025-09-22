@@ -24,9 +24,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  env: {
-    NEXT_PUBLIC_LEMONSQUEEZY_STORE_URL: process.env.LEMONSQUEEZY_STORE_URL,
-  }
 };
 
 export default nextConfig;
