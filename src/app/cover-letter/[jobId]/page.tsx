@@ -143,7 +143,7 @@ export default function CoverLetterPage() {
   return (
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 pt-28">
         <div className="container px-4 md:px-6 py-12 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
