@@ -15,57 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobMatchAnalyzer } from "@/components/job-match-analyzer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const pricingTiers = [
-    {
-        name: "Free",
-        price: "$0",
-        period: "/ month",
-        description: "For individuals just getting started.",
-        features: [
-            "10 Resume Generations / month",
-            "10 Job Match Analyses / month",
-            "Basic Job Tracker",
-            "Access to Learning Hub",
-        ],
-        cta: "Get Started for Free",
-        href: "/signup",
-        isFeatured: false,
-    },
-    {
-        name: "Pro",
-        price: "$19",
-        period: "/ month",
-        description: "For serious job seekers who need an edge.",
-        features: [
-            "Unlimited Resume Generations",
-            "Unlimited Job Match Analyses",
-            "Unlimited Cover Letter Generations",
-            "Advanced Job Tracker",
-            "Priority Support",
-            "Early access to new features"
-        ],
-        cta: "Go Pro",
-        href: "#", // Replace with your payment link
-        isFeatured: true,
-    },
-    {
-        name: "Enterprise",
-        price: "Custom",
-        period: "",
-        description: "For career coaches and organizations.",
-        features: [
-            "Everything in Pro",
-            "Multi-user management",
-            "Custom branding",
-            "Dedicated Account Manager",
-            "API Access",
-        ],
-        cta: "Contact Sales",
-        href: "#", // Replace with your contact link
-        isFeatured: false,
-    }
-];
+import { blogPosts } from "@/lib/blog-posts";
+import { BlogPostCard } from "@/components/blog-post-card";
 
 const howItWorksSteps = [
     {
@@ -102,6 +53,8 @@ export default function Home() {
       </div>
     );
   }
+
+  const sortedPosts = [...blogPosts].sort((a, b) => new Date(b.date as string).getTime() - new Date(a.date as string).getTime());
 
   return (
     <div className="flex min-h-screen flex-col main-bg">
@@ -170,6 +123,32 @@ export default function Home() {
               </div>
             </div>
 
+             <div id="learning-hub" className="w-full mt-24">
+                <div className="max-w-3xl mx-auto text-center animate-in fade-in-50 delay-[1300ms] duration-1000 mb-12">
+                    <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">From the Learning Hub</h2>
+                    <p className="mt-4 text-xl text-muted-foreground">
+                        Expert advice to supercharge your job search.
+                    </p>
+                </div>
+                <div
+                    className="group relative w-full overflow-hidden"
+                    style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}
+                >
+                    <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
+                        {[...sortedPosts, ...sortedPosts].map((post, index) => (
+                            <div key={index} className="flex-shrink-0 w-full max-w-sm p-4">
+                                <BlogPostCard post={post} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                 <div className="text-center mt-8">
+                    <Button asChild>
+                        <Link href="/learning-hub">View All Articles</Link>
+                    </Button>
+                </div>
+            </div>
+
             <div id="pricing" className="mx-auto w-full max-w-5xl mt-24">
                <div className="max-w-3xl mx-auto text-center animate-in fade-in-50 delay-[1300ms] duration-1000">
                     <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Simple, transparent pricing</h2>
@@ -220,3 +199,54 @@ export default function Home() {
     </div>
   );
 }
+
+const pricingTiers = [
+    {
+        name: "Free",
+        price: "$0",
+        period: "/ month",
+        description: "For individuals just getting started.",
+        features: [
+            "10 Resume Generations / month",
+            "10 Job Match Analyses / month",
+            "Basic Job Tracker",
+            "Access to Learning Hub",
+        ],
+        cta: "Get Started for Free",
+        href: "/signup",
+        isFeatured: false,
+    },
+    {
+        name: "Pro",
+        price: "$19",
+        period: "/ month",
+        description: "For serious job seekers who need an edge.",
+        features: [
+            "Unlimited Resume Generations",
+            "Unlimited Job Match Analyses",
+            "Unlimited Cover Letter Generations",
+            "Advanced Job Tracker",
+            "Priority Support",
+            "Early access to new features"
+        ],
+        cta: "Go Pro",
+        href: "#", // Replace with your payment link
+        isFeatured: true,
+    },
+    {
+        name: "Enterprise",
+        price: "Custom",
+        period: "",
+        description: "For career coaches and organizations.",
+        features: [
+            "Everything in Pro",
+            "Multi-user management",
+            "Custom branding",
+            "Dedicated Account Manager",
+            "API Access",
+        ],
+        cta: "Contact Sales",
+        href: "#", // Replace with your contact link
+        isFeatured: false,
+    }
+];
