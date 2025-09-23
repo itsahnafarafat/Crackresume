@@ -12,7 +12,7 @@ const firebaseConfig = {
   "projectId": "resuai-qodve",
   "appId": "1:258754616939:web:387aa3472eadd3c3d05b2e",
   "storageBucket": "resuai-qodve.appspot.com",
-  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY, // Correctly use the env variable
+  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   "authDomain": "resuai-qodve.firebaseapp.com",
   "messagingSenderId": "258754616939",
   "measurementId": "G-6NCSY7LRWR"
