@@ -39,13 +39,13 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-4 inset-x-0 z-50 flex justify-center">
-        <div className="flex h-14 items-center justify-between gap-6 rounded-full border bg-background/60 p-2 px-6 text-sm font-medium backdrop-blur-sm">
+    <header className="fixed top-0 inset-x-0 z-50 md:top-4">
+        <div className="container flex h-14 items-center justify-between gap-6 rounded-none border-b border-transparent bg-background/60 p-2 px-6 text-sm font-medium backdrop-blur-sm md:rounded-full md:border">
             <div className="hidden md:flex">
                 <Logo />
             </div>
             
-             <div className="md:hidden">
+             <div className="flex items-center md:hidden">
                 <Sheet>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -80,6 +80,10 @@ export function Header() {
                 </Sheet>
             </div>
             
+            <div className="flex md:hidden">
+                <Logo />
+            </div>
+
             <nav className="hidden md:flex items-center gap-6">
                 {navLinks()}
             </nav>
@@ -111,14 +115,21 @@ export function Header() {
                 </DropdownMenuContent>
                 </DropdownMenu>
             ) : (
-                <div className="hidden sm:flex items-center gap-2">
-                    <Button asChild variant="ghost" size="sm">
-                        <Link href="/login">Login</Link>
-                    </Button>
-                    <Button asChild size="sm">
-                        <Link href="/signup">Sign Up</Link>
-                    </Button>
-                </div>
+                <>
+                    <div className="hidden sm:flex items-center gap-2">
+                        <Button asChild variant="ghost" size="sm">
+                            <Link href="/login">Login</Link>
+                        </Button>
+                        <Button asChild size="sm">
+                            <Link href="/signup">Sign Up</Link>
+                        </Button>
+                    </div>
+                     <div className="sm:hidden">
+                        <Button asChild size="icon" variant="ghost">
+                            <Link href="/login"><UserIcon/></Link>
+                        </Button>
+                    </div>
+                </>
             )}
             </div>
         </div>
