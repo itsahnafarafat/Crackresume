@@ -114,10 +114,10 @@
     bottom: 0;
     background-image:
         /* Corner Gradients */
-        radial-gradient(ellipse 50% 50% at 0% 0%, hsla(266, 78%, 56%, 0.15), transparent 70%),
-        radial-gradient(ellipse 50% 50% at 100% 0%, hsla(266, 78%, 56%, 0.15), transparent 70%),
-        radial-gradient(ellipse 50% 50% at 0% 100%, hsla(266, 78%, 56%, 0.15), transparent 70%),
-        radial-gradient(ellipse 50% 50% at 100% 100%, hsla(266, 78%, 56%, 0.15), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 0% 0%, hsla(266, 78%, 56%, 0.2), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 100% 0%, hsla(266, 78%, 56%, 0.2), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 0% 100%, hsla(266, 78%, 56%, 0.2), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 100% 100%, hsla(266, 78%, 56%, 0.2), transparent 70%),
         
         /* Starry dots */
         radial-gradient(2px 2px at 20% 20%, hsl(var(--primary) / 0.5), transparent),
@@ -126,9 +126,8 @@
         radial-gradient(2px 2px at 10% 80%, hsl(var(--primary) / 0.4), transparent),
         radial-gradient(2px 2px at 90% 75%, hsl(var(--primary) / 0.5), transparent),
         radial-gradient(3px 3px at 30% 90%, hsl(var(--primary) / 0.6), transparent);
-    animation: pulse-gradient 10s infinite ease-in-out;
+    animation: pulse-gradient 8s infinite ease-in-out;
     z-index: 0;
-    opacity: 0.7;
 }
 
 @keyframes pulse-gradient {
