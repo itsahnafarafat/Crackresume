@@ -24,7 +24,7 @@ export function Header() {
     const sheetClasses = isSheet ? 'text-lg w-full justify-start' : '';
 
     const createLink = (href: string, text: string) => {
-        const link = <Link href={href} className={`${commonClasses} ${sheetClasses}`}>{text}</Link>;
+        const link = <Link href={href} className={`${commonClasses} ${sheetClasses} ${text === "Learning Hub" ? "whitespace-nowrap" : ""}`}>{text}</Link>;
         return isSheet ? <SheetClose asChild>{link}</SheetClose> : link;
     }
 
@@ -87,7 +87,7 @@ export function Header() {
   return (
     <header className="fixed top-0 inset-x-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between gap-6 bg-background/60 p-2 px-6 text-sm font-medium backdrop-blur-sm md:mt-4 md:rounded-full md:border">
+            <div className="flex h-16 items-center justify-between gap-6 md:bg-background/60 p-2 md:px-6 text-sm font-medium md:backdrop-blur-sm md:mt-4 md:rounded-full md:border">
                 {/* Left side: Logo */}
                 <div className="flex-1 flex justify-start">
                     <div className="flex items-center md:hidden">
@@ -130,7 +130,7 @@ export function Header() {
                 </div>
 
                 {/* Center: Logo on mobile, Nav on Desktop */}
-                <div className="flex-1 flex justify-center">
+                <div className="flex flex-1 items-center justify-center md:justify-center">
                     <div className="flex md:hidden">
                         <Logo />
                     </div>
