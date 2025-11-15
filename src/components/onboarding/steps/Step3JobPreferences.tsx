@@ -41,6 +41,7 @@ export function Step3JobPreferences({ data, updateData }: Step3Props) {
             placeholder="e.g., Senior Software Engineer, Product Manager"
             value={data.jobTitles || ''}
             onChange={(e) => updateData({ jobTitles: e.target.value })}
+            className="bg-background"
           />
            <p className="text-xs text-muted-foreground mt-1">Separate multiple titles with commas.</p>
         </div>
@@ -50,7 +51,7 @@ export function Step3JobPreferences({ data, updateData }: Step3Props) {
             value={data.jobLevel}
             onValueChange={(value) => updateData({ jobLevel: value })}
           >
-            <SelectTrigger id="job-level">
+            <SelectTrigger id="job-level" className="bg-background">
               <SelectValue placeholder="Select your experience level" />
             </SelectTrigger>
             <SelectContent>
@@ -70,6 +71,7 @@ export function Step3JobPreferences({ data, updateData }: Step3Props) {
             placeholder="e.g., San Francisco, CA, Remote"
             value={data.jobLocation || ''}
             onChange={(e) => updateData({ jobLocation: e.target.value })}
+            className="bg-background"
           />
         </div>
       </div>
