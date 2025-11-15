@@ -2,7 +2,15 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { 
+    onAuthStateChanged, 
+    User, 
+    signOut, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword
+} from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -13,6 +21,8 @@ interface AuthContextType {
   user: UserData | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signUpWithEmailPassword: (email: string, password: string) => Promise<void>;
+  signInWithEmailPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserResume: (resumeContent: string) => Promise<void>;
 }
@@ -44,26 +54,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
+  const createUserProfile = async (user: User) => {
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email?.split('@')[0],
+          photoURL: user.photoURL,
+          createdAt: serverTimestamp(),
+          resumeContent: '',
+          isAdmin: false,
+          onboardingComplete: false,
+        });
+    }
+  }
+
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      const googleUser = result.user;
-
-      const userDocRef = doc(firestore, 'users', googleUser.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-          uid: googleUser.uid,
-          email: googleUser.email,
-          displayName: googleUser.displayName,
-          photoURL: googleUser.photoURL,
-          createdAt: serverTimestamp(),
-          resumeContent: '',
-          isAdmin: false,
-        });
-      }
+      await createUserProfile(result.user);
       
       router.push('/dashboard');
       toast({ title: "Login Successful", description: "Welcome!" });
@@ -72,6 +85,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Google Sign-In error:", error);
       toast({ title: "Sign-In Failed", description: error.message, variant: 'destructive' });
     }
+  };
+
+  const signUpWithEmailPassword = async (email: string, password: string) => {
+      try {
+          const result = await createUserWithEmailAndPassword(auth, email, password);
+          await createUserProfile(result.user);
+
+          router.push('/dashboard');
+          toast({ title: "Account Created", description: "Welcome to Crackresume!"});
+      } catch (error: any) {
+          console.error("Email/Password Sign-Up error:", error);
+          toast({ title: "Sign-Up Failed", description: error.message, variant: 'destructive' });
+      }
+  };
+
+  const signInWithEmailPassword = async (email: string, password: string) => {
+      try {
+          await signInWithEmailAndPassword(auth, email, password);
+          router.push('/dashboard');
+          toast({ title: "Login Successful", description: "Welcome back!"});
+      } catch (error: any) {
+          console.error("Email/Password Sign-In error:", error);
+          toast({ title: "Sign-In Failed", description: error.message, variant: 'destructive' });
+      }
   };
 
   const logout = async () => {
@@ -100,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, logout, updateUserResume };
+  const value = { user, loading, signInWithGoogle, signUpWithEmailPassword, signInWithEmailPassword, logout, updateUserResume };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
