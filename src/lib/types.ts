@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 import type { User as FirebaseUser } from 'firebase/auth';
 import type { Timestamp } from 'firebase/firestore';
@@ -19,6 +18,12 @@ export interface Job {
 export interface UserData extends FirebaseUser {
     isAdmin?: boolean;
     resumeContent?: string;
+    onboardingComplete?: boolean;
+    jobPreferences?: {
+        jobTitles?: string;
+        jobLevel?: string;
+        jobLocation?: string;
+    };
 }
 
 export const BlogPostSchema = z.object({

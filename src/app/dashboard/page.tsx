@@ -1,23 +1,34 @@
-
 'use client';
 
 import { ResumeManager } from "@/components/dashboard/resume-manager";
 import { JobTracker } from "@/components/job-tracker";
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Header } from "@/components/shared/header";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const [showOnboarding, setShowOnboarding] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
+        if (!loading && user && !user.onboardingComplete) {
+            setShowOnboarding(true);
+        }
     }, [user, loading, router]);
+    
+    const handleOnboardingComplete = () => {
+        setShowOnboarding(false);
+        // We can optionally refresh user data here if needed
+        // For now, we just hide the modal. The user object in useAuth
+        // will update on the next reload.
+    }
 
     if (loading || !user) {
         return (
@@ -25,6 +36,10 @@ export default function DashboardPage() {
                 <Loader2 className="h-12 w-12 animate-spin" />
             </div>
         );
+    }
+    
+    if (showOnboarding) {
+        return <OnboardingFlow onComplete={handleOnboardingComplete} />;
     }
     
     return (
