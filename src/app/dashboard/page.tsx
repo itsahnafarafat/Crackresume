@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-    const { user, loading } = useAuth();
+    const { user, loading, refreshUser } = useAuth();
     const router = useRouter();
     const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -23,11 +23,9 @@ export default function DashboardPage() {
         }
     }, [user, loading, router]);
     
-    const handleOnboardingComplete = () => {
+    const handleOnboardingComplete = async () => {
+        await refreshUser(); // Explicitly refresh user data
         setShowOnboarding(false);
-        // We can optionally refresh user data here if needed
-        // For now, we just hide the modal. The user object in useAuth
-        // will update on the next reload.
     }
 
     if (loading || !user) {

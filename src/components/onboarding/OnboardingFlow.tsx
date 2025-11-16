@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -12,6 +12,7 @@ import { Step3JobPreferences } from './steps/Step3JobPreferences';
 import { Step4Complete } from './steps/Step4Complete';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Loader2 } from 'lucide-react';
 
 interface OnboardingData {
   resumeContent?: string;
@@ -21,10 +22,22 @@ interface OnboardingData {
 }
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
-  const { user, updateUserResume } = useAuth();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    // Persist current step to localStorage
+    const savedStep = localStorage.getItem('onboardingStep');
+    if (savedStep) {
+      setCurrentStep(parseInt(savedStep, 10));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('onboardingStep', String(currentStep));
+  }, [currentStep]);
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
@@ -49,15 +62,11 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     if (!user) return;
     setIsSaving(true);
     try {
-      // Save resume content if it exists
-      if (onboardingData.resumeContent) {
-        await updateUserResume(onboardingData.resumeContent);
-      }
-      
-      // Save job preferences and mark onboarding as complete
+      // Save all collected data to the user's profile in Firestore
       const userProfileRef = doc(firestore, 'users', user.uid);
       await setDoc(userProfileRef, {
         onboardingComplete: true,
+        resumeContent: onboardingData.resumeContent || user.resumeContent || '',
         jobPreferences: {
           jobTitles: onboardingData.jobTitles || '',
           jobLevel: onboardingData.jobLevel || '',
@@ -65,6 +74,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         }
       }, { merge: true });
 
+      localStorage.removeItem('onboardingStep');
       onComplete();
 
     } catch (error) {
@@ -119,7 +129,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {/* Navigation Buttons */}
         <div className="p-6 border-t bg-secondary/50 rounded-b-xl flex justify-between items-center">
           <div>
-            {currentStep > 1 && (
+            {currentStep > 1 && currentStep < totalSteps && (
               <Button variant="ghost" onClick={handleBack}>
                 Back
               </Button>
@@ -130,7 +140,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
               <Button onClick={handleNext}>Next</Button>
             ) : (
               <Button onClick={handleComplete} disabled={isSaving}>
-                {isSaving ? 'Saving...' : 'Get Started'}
+                {isSaving ? <><Loader2 className="animate-spin" /> Saving...</> : 'Get Started'}
                 </Button>
             )}
           </div>

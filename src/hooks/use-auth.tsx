@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { 
     onAuthStateChanged, 
     User, 
@@ -25,6 +25,7 @@ interface AuthContextType {
   signInWithEmailPassword: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserResume: (resumeContent: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,16 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { toast } = useToast();
 
+  const fetchUserData = useCallback(async (firebaseUser: User) => {
+    const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
+    const userDoc = await getDoc(userDocRef);
+    const userData = userDoc.exists() ? (userDoc.data() as UserData) : {};
+    setUser({ ...firebaseUser, ...userData });
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {
-        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
-        const userDoc = await getDoc(userDocRef);
-        
-        const userData = userDoc.exists() ? userDoc.data() as UserData : {};
-        setUser({ ...firebaseUser, ...userData });
-
+        await fetchUserData(firebaseUser);
       } else {
         setUser(null);
       }
@@ -52,7 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [fetchUserData]);
+
+  const refreshUser = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+        setLoading(true);
+        await fetchUserData(currentUser);
+        setLoading(false);
+    }
+  }, [fetchUserData]);
 
   const createUserProfile = async (user: User) => {
     const userDocRef = doc(firestore, 'users', user.uid);
@@ -68,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           resumeContent: '',
           isAdmin: false,
           onboardingComplete: false,
-        });
+        }, { merge: true });
     }
   }
 
@@ -137,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, signUpWithEmailPassword, signInWithEmailPassword, logout, updateUserResume };
+  const value = { user, loading, signInWithGoogle, signUpWithEmailPassword, signInWithEmailPassword, logout, updateUserResume, refreshUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
