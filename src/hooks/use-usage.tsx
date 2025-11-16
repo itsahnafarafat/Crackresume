@@ -9,7 +9,7 @@ import { PaywallDialog } from '@/components/shared/paywall-dialog';
 
 export type AiFeature = 'resume' | 'coverLetter' | 'jobMatch';
 
-const FREE_TIER_LIMIT = 5;
+export const FREE_TIER_LIMIT = 5;
 
 export function useUsage() {
     const { user, refreshUser } = useAuth();

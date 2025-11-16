@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ResumeManager } from "@/components/dashboard/resume-manager";
@@ -8,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { UsageCard } from "@/components/dashboard/usage-card";
 
 export default function DashboardPage() {
     const { user, loading, refreshUser } = useAuth();
@@ -56,7 +58,8 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="grid gap-8 lg:grid-cols-3">
-                            <div className="lg:col-span-1">
+                            <div className="lg:col-span-1 space-y-8">
+                                <UsageCard />
                                 <ResumeManager />
                             </div>
                             <div className="lg:col-span-2">

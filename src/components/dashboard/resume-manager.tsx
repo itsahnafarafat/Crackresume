@@ -27,18 +27,17 @@ export function ResumeManager() {
     }
 
     return (
-        <Card className="bg-card/80 backdrop-blur-sm border-white/10">
+        <Card className="bg-card/80 backdrop-blur-sm border-white/10 h-full flex flex-col">
             <CardHeader>
                 <CardTitle>Your Base Resume</CardTitle>
                 <CardDescription>Save your resume here. It will be automatically used by the resume tool.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-grow flex flex-col">
                 <Textarea
                     placeholder="Paste your base resume here..."
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
-                    rows={20}
-                    className="text-sm bg-secondary/50"
+                    className="text-sm bg-secondary/50 flex-grow"
                 />
                 <Button onClick={handleSave} disabled={isPending} className="w-full">
                     {isPending ? <Loader2 className="animate-spin" /> : <Save />}
