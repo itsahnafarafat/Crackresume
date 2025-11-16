@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '@/lib/firebase';
 import { useAuth } from '@/hooks/use-auth';
+import { useUsage } from '@/hooks/use-usage.tsx';
 import type { Job } from '@/lib/types';
 import { Header } from '@/components/shared/header';
 import { Loader2, Wand2, Clipboard as ClipboardIcon, FileText, Briefcase, Download } from 'lucide-react';
@@ -23,6 +24,7 @@ export default function CoverLetterPage() {
   const params = useParams();
   const { jobId } = params;
   const { toast } = useToast();
+  const { checkUsage, incrementUsage, Paywall } = useUsage();
 
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function CoverLetterPage() {
     fetchJob();
   }, [user, authLoading, jobId, router, toast]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!resumeContent || !job?.jobDescription) {
         toast({
             title: "Missing Information",
@@ -77,6 +79,11 @@ export default function CoverLetterPage() {
             variant: 'destructive',
         });
         return;
+    }
+    
+    if (user) {
+        const { hasUsage } = await checkUsage('coverLetter');
+        if (!hasUsage) return;
     }
 
     startTransition(async () => {
@@ -88,6 +95,10 @@ export default function CoverLetterPage() {
                 jobTitle: job.jobTitle,
             });
             setCoverLetter(result.coverLetter);
+
+            if (user) {
+                await incrementUsage('coverLetter');
+            }
             toast({ title: 'Success!', description: 'Your custom cover letter has been generated.'});
         } catch (error) {
             console.error("Cover letter generation error:", error);
@@ -143,6 +154,7 @@ export default function CoverLetterPage() {
   return (
     <div className="flex min-h-screen flex-col main-bg">
       <Header />
+      <Paywall />
       <main className="flex-1 relative z-10 pt-28">
         <div className="container px-4 md:px-6 py-12 animate-in fade-in-50 slide-in-from-top-8 duration-1000">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">

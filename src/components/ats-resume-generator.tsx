@@ -14,21 +14,13 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star, MessageSquareQuote } from 'lucide-react';
 import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { addDoc, collection, doc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
+import { useUsage } from '@/hooks/use-usage.tsx';
+import { addDoc, collection } from 'firebase/firestore';
 import { firestore, analytics } from '@/lib/firebase';
 import { logEvent } from "firebase/analytics";
 import Link from 'next/link';
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel, TabStopType, TabStopPosition, ISpacingProperties, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Input } from './ui/input';
 
 const motivationalQuotes = [
@@ -51,6 +43,7 @@ export function AtsResumeGenerator() {
   const [motivationalMessage, setMotivationalMessage] = useState(motivationalQuotes[0]);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { checkUsage, incrementUsage, Paywall } = useUsage();
   
   useEffect(() => {
     if (user?.resumeContent) {
@@ -72,7 +65,7 @@ export function AtsResumeGenerator() {
   }, [isPending]);
 
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!resumeContent.trim() || !jobDescription.trim()) {
       toast({
         title: 'Missing Information',
@@ -80,6 +73,11 @@ export function AtsResumeGenerator() {
         variant: 'destructive',
       });
       return;
+    }
+
+    if (user) {
+        const { hasUsage } = await checkUsage('resume');
+        if (!hasUsage) return;
     }
 
     if (analytics) {
@@ -104,26 +102,28 @@ export function AtsResumeGenerator() {
           
         setResult(null);
 
+        const [atsResult, jobDetails] = await Promise.all([
+            generateAtsFriendlyResume(payload),
+            user ? extractJobDetails({ jobDescription }) : Promise.resolve(null)
+        ]);
+
+        setResult(atsResult);
+
         if (user) {
-            const [atsResult, jobDetails] = await Promise.all([
-               generateAtsFriendlyResume(payload),
-               extractJobDetails({ jobDescription })
-            ]);
-    
-            setResult(atsResult);
-    
-            const newJob: Omit<Job, 'id'> = {
-              userId: user.uid,
-              companyName: jobDetails.companyName || '',
-              jobTitle: jobDetails.jobTitle || '',
-              location: jobDetails.location || '',
-              status: 'Saved',
-              applicationDate: new Date().toISOString(),
-              notes: 'Generated an ATS-friendly resume for this application.',
-              jobDescription: jobDescription,
-            };
-            
-            if (!isRegeneration) {
+            await incrementUsage('resume');
+
+            if (jobDetails && !isRegeneration) {
+                const newJob: Omit<Job, 'id'> = {
+                  userId: user.uid,
+                  companyName: jobDetails.companyName || '',
+                  jobTitle: jobDetails.jobTitle || '',
+                  location: jobDetails.location || '',
+                  status: 'Saved',
+                  applicationDate: new Date().toISOString(),
+                  notes: 'Generated an ATS-friendly resume for this application.',
+                  jobDescription: jobDescription,
+                };
+                
                 await addDoc(collection(firestore, 'jobs'), newJob);
             
                 window.dispatchEvent(new Event('jobAdded'));
@@ -139,13 +139,10 @@ export function AtsResumeGenerator() {
                         description: 'We saved the job, but please add the company name and title manually.',
                     });
                 }
-            } else {
+            } else if (isRegeneration) {
                  toast({ title: 'Resume Regenerated!', description: 'Your resume has been updated with your feedback.' });
             }
-
         } else {
-            const atsResult = await generateAtsFriendlyResume(payload);
-            setResult(atsResult);
             toast({
                 title: 'Resume Generated!',
                 description: (
@@ -302,6 +299,7 @@ export function AtsResumeGenerator() {
 
   return (
     <div className="flex flex-col gap-8">
+      <Paywall />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="bg-card/80 backdrop-blur-sm border-white/10 transition-all duration-300 hover:border-primary/50 animate-in fade-in slide-in-from-left-12 duration-1000">
           <CardHeader>
