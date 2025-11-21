@@ -82,7 +82,7 @@ export const blogPosts: BlogPost[] = [
   content: `
     <p class="lead">More than 90% of Fortune 500 companies use Applicant Tracking Systems (ATS) to filter resumes. If your resume isn’t ATS-friendly, it could be rejected before a human ever sees it. This guide will show you how to build a modern, ATS-compliant resume that gets noticed in 2025.</p>
 
-    <h2>What is an ATS-Friendly Resume?</h2>
+    <h2>What is an ATS-Friendly Resume??</h2>
     <p>An ATS-friendly resume is designed so that Applicant Tracking Systems can easily scan, read, and rank it. It uses clean formatting, standard section headings, and keyword optimization to ensure your resume reaches the recruiter’s desk.</p>
     
     <h2>Why It Matters in 2025</h2>
