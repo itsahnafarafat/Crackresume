@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const ExtractJobDetailsInputSchema = z.object({
   jobDescription: z.string().describe('The full text of the job description.'),
@@ -35,9 +34,7 @@ const prompt = ai.definePrompt({
   name: 'extractJobDetailsPrompt',
   input: {schema: ExtractJobDetailsInputSchema},
   output: {schema: ExtractJobDetailsOutputSchema},
-  config: {
-    model: 'gemini-pro',
-  },
+  model: 'gemini-pro',
   prompt: `You are an expert at parsing job descriptions. Your task is to extract the job title, company name, and location from the following job description.
 
 If you cannot find a piece of information, respond with an empty string for that field.

@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const JobMatchAnalyzerInputSchema = z.object({
   resumeContent: z.string().describe('The content of the resume.'),
@@ -36,8 +35,8 @@ const prompt = ai.definePrompt({
   name: 'jobMatchAnalyzerPrompt',
   input: {schema: JobMatchAnalyzerInputSchema},
   output: {schema: JobMatchAnalyzerOutputSchema},
+  model: 'gemini-pro',
   config: {
-    model: 'gemini-pro',
     temperature: 0.1,
   },
   prompt: `You are an expert career coach and hiring manager. Your task is to analyze the provided resume against the job description and determine how good of a match it is.
