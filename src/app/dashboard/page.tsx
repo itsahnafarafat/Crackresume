@@ -3,32 +3,22 @@
 
 import { ResumeManager } from "@/components/dashboard/resume-manager";
 import { JobTracker } from "@/components/job-tracker";
-import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { Header } from "@/components/shared/header";
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { UsageCard } from "@/components/dashboard/usage-card";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
-    const { user, loading, refreshUser } = useAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
-    const [showOnboarding, setShowOnboarding] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
-        if (!loading && user && !user.onboardingComplete) {
-            setShowOnboarding(true);
-        }
     }, [user, loading, router]);
     
-    const handleOnboardingComplete = async () => {
-        await refreshUser(); // Explicitly refresh user data
-        setShowOnboarding(false);
-    }
 
     if (loading || !user) {
         return (
@@ -36,10 +26,6 @@ export default function DashboardPage() {
                 <Loader2 className="h-12 w-12 animate-spin" />
             </div>
         );
-    }
-    
-    if (showOnboarding) {
-        return <OnboardingFlow onComplete={handleOnboardingComplete} />;
     }
     
     return (
@@ -58,8 +44,7 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="grid gap-8 lg:grid-cols-3">
-                            <div className="lg:col-span-1 space-y-8">
-                                <UsageCard />
+                            <div className="lg:col-span-1">
                                 <ResumeManager />
                             </div>
                             <div className="lg:col-span-2">

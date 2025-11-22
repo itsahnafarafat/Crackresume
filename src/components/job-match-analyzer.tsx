@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, ThumbsDown, ThumbsUp, XCircle } from 'lucide-react';
 import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useUsage } from '@/hooks/use-usage.tsx';
 import Link from 'next/link';
 
 export function JobMatchAnalyzer() {
@@ -21,7 +20,6 @@ export function JobMatchAnalyzer() {
   const [result, setResult] = useState<JobMatchAnalyzerOutput | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { checkUsage, incrementUsage, Paywall } = useUsage();
   
   useEffect(() => {
     if (user?.resumeContent) {
@@ -40,11 +38,6 @@ export function JobMatchAnalyzer() {
       return;
     }
 
-    if (user) {
-        const { hasUsage } = await checkUsage('jobMatch');
-        if (!hasUsage) return;
-    }
-
     startTransition(async () => {
       setResult(null);
       
@@ -57,9 +50,7 @@ export function JobMatchAnalyzer() {
         const matchResult = await analyzeJobMatch(payload);
         setResult(matchResult);
 
-        if (user) {
-            await incrementUsage('jobMatch');
-        } else {
+        if (!user) {
              toast({
                 title: 'Analysis Complete!',
                 description: (
@@ -69,6 +60,8 @@ export function JobMatchAnalyzer() {
                     </p>
                 )
             });
+        } else {
+             toast({ title: 'Analysis Complete!', description: 'Your analysis is ready.' });
         }
 
 
@@ -91,7 +84,6 @@ export function JobMatchAnalyzer() {
 
   return (
     <div className="flex flex-col gap-8">
-      {user && <Paywall />}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="bg-card/80 backdrop-blur-sm border-white/10 transition-all duration-300 hover:border-primary/50 animate-in fade-in slide-in-from-left-12 duration-1000">
           <CardHeader>
@@ -210,5 +202,3 @@ export function JobMatchAnalyzer() {
     </div>
   );
 }
-
-    

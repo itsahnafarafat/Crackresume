@@ -12,7 +12,7 @@ import {
     signInWithEmailAndPassword
 } from 'firebase/auth';
 import { auth, firestore } from '@/lib/firebase';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import type { UserData } from '@/lib/types';
 import { useToast } from './use-toast';
@@ -76,17 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: user.email,
           displayName: user.displayName || user.email?.split('@')[0],
           photoURL: user.photoURL,
-          createdAt: serverTimestamp(),
+          createdAt: new Date().toISOString(),
           resumeContent: '',
           isAdmin: false,
           isPro: false,
           onboardingComplete: false,
-          usage: {
-            resumeGenerations: 0,
-            coverLetterGenerations: 0,
-            jobMatchAnalyses: 0,
-            lastReset: Timestamp.now(),
-          }
         }, { merge: true });
     }
   }

@@ -14,7 +14,6 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Clipboard, FileText, Lightbulb, Loader2, Wand2, Download, Star, MessageSquareQuote } from 'lucide-react';
 import React, { useState, useTransition, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useUsage } from '@/hooks/use-usage.tsx';
 import { addDoc, collection } from 'firebase/firestore';
 import { firestore, analytics } from '@/lib/firebase';
 import { logEvent } from "firebase/analytics";
@@ -43,7 +42,6 @@ export function AtsResumeGenerator() {
   const [motivationalMessage, setMotivationalMessage] = useState(motivationalQuotes[0]);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { checkUsage, incrementUsage, Paywall } = useUsage();
   
   useEffect(() => {
     if (user?.resumeContent) {
@@ -73,11 +71,6 @@ export function AtsResumeGenerator() {
         variant: 'destructive',
       });
       return;
-    }
-
-    if (user) {
-        const { hasUsage } = await checkUsage('resume');
-        if (!hasUsage) return;
     }
 
     if (analytics) {
@@ -110,8 +103,6 @@ export function AtsResumeGenerator() {
         setResult(atsResult);
 
         if (user) {
-            await incrementUsage('resume');
-
             if (jobDetails && !isRegeneration) {
                 const newJob: Omit<Job, 'id'> = {
                   userId: user.uid,
@@ -141,6 +132,8 @@ export function AtsResumeGenerator() {
                 }
             } else if (isRegeneration) {
                  toast({ title: 'Resume Regenerated!', description: 'Your resume has been updated with your feedback.' });
+            } else {
+                toast({ title: 'Resume Generated!', description: 'Your resume is ready.' });
             }
         } else {
             toast({
@@ -299,7 +292,6 @@ export function AtsResumeGenerator() {
 
   return (
     <div className="flex flex-col gap-8">
-      {user && <Paywall />}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="bg-card/80 backdrop-blur-sm border-white/10 transition-all duration-300 hover:border-primary/50 animate-in fade-in slide-in-from-left-12 duration-1000">
           <CardHeader>
@@ -431,5 +423,3 @@ export function AtsResumeGenerator() {
     </div>
   );
 }
-
-    
