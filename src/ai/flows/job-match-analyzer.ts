@@ -36,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'jobMatchAnalyzerPrompt',
   input: {schema: JobMatchAnalyzerInputSchema},
   output: {schema: JobMatchAnalyzerOutputSchema},
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-pro'),
   config: {
     temperature: 0.1,
   },

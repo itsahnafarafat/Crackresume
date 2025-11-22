@@ -36,7 +36,7 @@ const GenerateAtsFriendlyResumeOutputSchema = z.object({
   atsFriendlyResumeText: z.string().describe('The rewritten resume as a single block of plain text for display and copy-paste.'),
   atsScore: z
     .number()
-    .describe('A score from 0 to 100 representing how ATS-friendly the new resume is.'),
+    .describe('A score from 0 to 100 representing how well the new resume is.'),
   scoreAnalysis: z.string().describe('A one-sentence analysis of the score (e.g., "Good - Some optimization recommended").'),
   keyImprovements: z.array(z.string()).describe('A list of key improvements made to the resume.'),
 });
@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'atsResumeGeneratorPrompt',
   input: {schema: GenerateAtsFriendlyResumeInputSchema},
   output: {schema: GenerateAtsFriendlyResumeOutputSchema},
-  model: googleAI.model('gemini-1.5-flash'),
+  model: googleAI.model('gemini-pro'),
   prompt: `You are an expert resume writer and career coach specializing in optimizing resumes for Applicant Tracking Systems (ATS).
 Your task is to rewrite the provided resume to be highly compatible with ATS while tailoring it to the specific job description provided.
 
@@ -79,7 +79,7 @@ Previous Score: {{previousAttempt.score}}
 {{#if previousAttempt.feedback}}
 User Feedback for this attempt: "{{previousAttempt.feedback}}"
 
-You MUST address this feedback specifically and incorporate it into the new version. For example, if the feedback is "Emphasize my project management skills," you MUST strengthen the project management aspects of the resume. The new structured resume MUST be demonstrably better and reflect the user's feedback.
+You MUST address this feedback specifically and in corporate it into the new version. For example, if the feedback is "Emphasize my project management skills," you MUST strengthen the project management aspects of the resume. The new structured resume MUST be demonstrably better and reflect the user's feedback.
 {{else}}
 You MUST make significant improvements to the resume to increase the score. Analyze the previous attempt and its shortcomings. Focus on incorporating more keywords, strengthening the action verbs, and adding more quantifiable achievements to achieve a higher ATS score. The new structured resume must be demonstrably better.
 {{/if}}
