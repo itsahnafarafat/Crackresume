@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateCoverLetterInputSchema = z.object({
   resumeContent: z.string().describe('The content of the resume.'),
@@ -35,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'generateCoverLetterPrompt',
   input: {schema: GenerateCoverLetterInputSchema},
   output: {schema: GenerateCoverLetterOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
+  model: googleAI.model('gemini-1.5-flash'),
   prompt: `You are an expert career coach and professional resume writer. Your task is to write a compelling, professional, and personalized cover letter for a candidate applying for the position of {{{jobTitle}}} at {{{companyName}}}.
 
 **Core Instructions:**

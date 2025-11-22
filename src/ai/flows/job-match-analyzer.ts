@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const JobMatchAnalyzerInputSchema = z.object({
   resumeContent: z.string().describe('The content of the resume.'),
@@ -35,7 +36,7 @@ const prompt = ai.definePrompt({
   name: 'jobMatchAnalyzerPrompt',
   input: {schema: JobMatchAnalyzerInputSchema},
   output: {schema: JobMatchAnalyzerOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
+  model: googleAI.model('gemini-1.5-flash'),
   config: {
     temperature: 0.1,
   },
