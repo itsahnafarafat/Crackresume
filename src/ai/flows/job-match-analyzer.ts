@@ -6,7 +6,7 @@
  *
  * - analyzeJobMatch - A function that takes a resume and job description and returns a match analysis.
  * - JobMatchAnalyzerInput - The input type for the analyzeJobMatch function.
- * - JobMatchAnalyzerOutput - The return type for the analyzeJobMatch function.
+ * - JobMatchAnalyzerOutput - The return type for the analyzeJob-match-analyzer function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   name: 'jobMatchAnalyzerPrompt',
   input: {schema: JobMatchAnalyzerInputSchema},
   output: {schema: JobMatchAnalyzerOutputSchema},
-  model: 'gemini-pro',
+  model: 'googleai/gemini-pro',
   config: {
     temperature: 0.1,
   },
