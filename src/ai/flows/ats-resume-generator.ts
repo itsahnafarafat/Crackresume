@@ -50,7 +50,6 @@ const prompt = ai.definePrompt({
   name: 'atsResumeGeneratorPrompt',
   input: {schema: GenerateAtsFriendlyResumeInputSchema},
   output: {schema: GenerateAtsFriendlyResumeOutputSchema},
-  model: googleAI.model('gemini-pro'),
   prompt: `You are an expert resume writer and career coach specializing in optimizing resumes for Applicant Tracking Systems (ATS).
 Your task is to rewrite the provided resume to be highly compatible with ATS while tailoring it to the specific job description provided.
 
