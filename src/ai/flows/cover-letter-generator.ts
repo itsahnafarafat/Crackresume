@@ -35,7 +35,7 @@ const prompt = ai.definePrompt({
   name: 'generateCoverLetterPrompt',
   input: {schema: GenerateCoverLetterInputSchema},
   output: {schema: GenerateCoverLetterOutputSchema},
-  model: 'googleai/gemini-pro',
+  model: 'gemini-1.0-pro',
   prompt: `You are an expert career coach and professional resume writer. Your task is to write a compelling, professional, and personalized cover letter for a candidate applying for the position of {{{jobTitle}}} at {{{companyName}}}.
 
 **Core Instructions:**
